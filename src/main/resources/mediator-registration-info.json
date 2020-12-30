@@ -1,0 +1,33 @@
+{
+  "urn": "urn:uuid:bb49a1b0-4ad0-11eb-833f-a1f936ef8af5",
+  "version": "0.1.0",
+  "name": "HFR Mediator",
+  "description": "An openHIM mediator for handling sharing of health facilities infomation from Health Facility Registry to other health systems",
+  "endpoints": [
+    {
+      "name": "HFR Mediator Route",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/hfr",
+      "type": "http"
+    }
+  ],
+  "defaultChannelConfig": [
+    {
+      "name": "HFR Mediator",
+      "urlPattern": "^/hfr$",
+      "type": "http",
+      "allow": ["hfrmediator"],
+      "routes": [
+        {
+          "name": "HFR Mediator Route",
+          "host": "localhost",
+          "port": "3001",
+          "path": "/hfr",
+          "type": "http",
+          "primary": "true"
+        }
+      ]
+    }
+  ]
+}
