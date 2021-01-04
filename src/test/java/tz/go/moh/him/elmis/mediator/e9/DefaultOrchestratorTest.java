@@ -1,4 +1,4 @@
-package tz.go.moh.him.hfr.mediator;
+package tz.go.moh.him.elmis.mediator.e9;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -10,6 +10,7 @@ import org.junit.*;
 import org.openhim.mediator.engine.MediatorConfig;
 import org.openhim.mediator.engine.messages.FinishRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
+import tz.go.moh.him.elmis.mediator.e9.DefaultOrchestrator;
 
 import static org.junit.Assert.*;
 

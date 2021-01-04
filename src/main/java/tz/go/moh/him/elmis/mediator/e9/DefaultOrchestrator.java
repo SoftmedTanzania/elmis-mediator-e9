@@ -1,4 +1,4 @@
-package tz.go.moh.him.hfr.mediator;
+package tz.go.moh.him.elmis.mediator.e9;
 
 import akka.actor.UntypedActor;
 import akka.event.Logging;
