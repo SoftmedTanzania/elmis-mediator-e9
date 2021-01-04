@@ -34,7 +34,7 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
     protected String errorMessage = "";
     protected MediatorHTTPRequest originalRequest;
 
-    LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+    private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     public DailyStockStatusOrchestrator(MediatorConfig config) {
         this.config = config;
