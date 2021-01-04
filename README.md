@@ -1,5 +1,6 @@
 
 # Tanzania Epicor9 - eLMIS mediator
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/83968316d58146889a6387a5c44444b2)](https://app.codacy.com/gh/SoftmedTanzania/elmis-mediator-e9?utm_source=github.com&utm_medium=referral&utm_content=SoftmedTanzania/elmis-mediator-e9&utm_campaign=Badge_Grade)
 [![Java CI Badge](https://github.com/SoftmedTanzania/hfr-mediator/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/SoftmedTanzania/hfr-mediator/actions?query=workflow%3A%22Java+CI+with+Maven%22)
 [![Coverage Status](https://coveralls.io/repos/github/SoftmedTanzania/hdr-mediator-emr/badge.svg?branch=master)](https://coveralls.io/github/SoftmedTanzania/hdr-mediator-emr?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/83968316d58146889a6387a5c44444b2)](https://app.codacy.com/gh/SoftmedTanzania/hfr-mediator?utm_source=github.com&utm_medium=referral&utm_content=SoftmedTanzania/hfr-mediator&utm_campaign=Badge_Grade)
