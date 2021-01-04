@@ -1,29 +1,30 @@
 {
   "urn": "urn:uuid:bb49a1b0-4ad0-11eb-833f-a1f936ef8af5",
   "version": "0.1.0",
-  "name": "HFR Mediator",
-  "description": "An openHIM mediator for handling sharing of health facilities infomation from Health Facility Registry to other health systems",
+  "name": "eLMIS Mediator",
+  "description": "An openHIM mediator for handling  mediator for processing data  from MSD Epicor9 and sending it to eLMIS.",
   "endpoints": [
     {
-      "name": "HFR Mediator Route",
+      "name": "eLMIS Daily Stock Status Route",
       "host": "localhost",
       "port": "3001",
-      "path": "/hfr",
+      "path": "/elmis/daily_stock_status",
       "type": "http"
     }
   ],
   "defaultChannelConfig": [
     {
-      "name": "HFR Mediator",
-      "urlPattern": "^/hfr$",
+      "name": "eLMIS Daily Stock Count Mediator",
+      "urlPattern": "^/daily_stock_status$",
+      "description": "An openHIM mediator for handling  mediator for processing data  Daily Stock Count from MSD Epicor9 and sending it to eLMIS.",
       "type": "http",
-      "allow": ["hfrmediator"],
+      "allow": ["elmis-mediator"],
       "routes": [
         {
-          "name": "HFR Mediator Route",
+          "name": "eLMIS Daily Stock Status Route",
           "host": "localhost",
           "port": "3001",
-          "path": "/hfr",
+          "path": "/elmis/daily_stock_status",
           "type": "http",
           "primary": "true"
         }
