@@ -1,4 +1,4 @@
-package tz.go.moh.him.hfr.mediator;
+package tz.go.moh.him.elmis.mediator.e9;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -10,6 +10,7 @@ import org.junit.*;
 import org.openhim.mediator.engine.MediatorConfig;
 import org.openhim.mediator.engine.messages.FinishRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
+import tz.go.moh.him.elmis.mediator.e9.DefaultOrchestrator;
 
 import static org.junit.Assert.*;
 
@@ -39,7 +40,7 @@ public class DefaultOrchestratorTest {
     @Test
     public void testMediatorHTTPRequest() throws Exception {
         new JavaTestKit(system) {{
-            final MediatorConfig testConfig = new MediatorConfig("hfr-mediator", "localhost", 3001);
+            final MediatorConfig testConfig = new MediatorConfig("elmis-mediator-e9", "localhost", 3001);
             final ActorRef defaultOrchestrator = system.actorOf(Props.create(DefaultOrchestrator.class, testConfig));
 
             MediatorHTTPRequest POST_Request = new MediatorHTTPRequest(
@@ -50,7 +51,7 @@ public class DefaultOrchestratorTest {
                     "http",
                     null,
                     null,
-                    "/hfr",
+                    "/elmis",
                     "test message",
                     Collections.<String, String>singletonMap("Content-Type", "text/plain"),
                     Collections.<Pair<String, String>>emptyList()
