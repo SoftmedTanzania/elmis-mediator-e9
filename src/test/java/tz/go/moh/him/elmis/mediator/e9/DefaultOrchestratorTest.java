@@ -40,7 +40,7 @@ public class DefaultOrchestratorTest {
     @Test
     public void testMediatorHTTPRequest() throws Exception {
         new JavaTestKit(system) {{
-            final MediatorConfig testConfig = new MediatorConfig("hfr-mediator", "localhost", 3001);
+            final MediatorConfig testConfig = new MediatorConfig("elmis-mediator-e9", "localhost", 3001);
             final ActorRef defaultOrchestrator = system.actorOf(Props.create(DefaultOrchestrator.class, testConfig));
 
             MediatorHTTPRequest POST_Request = new MediatorHTTPRequest(
