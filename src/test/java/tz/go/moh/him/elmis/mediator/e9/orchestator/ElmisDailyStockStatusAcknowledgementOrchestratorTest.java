@@ -87,11 +87,11 @@ public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTe
     }
 
     private static class MockOpenHIM extends CoreAPIConnector {
-        private final String response;
+        private final String openHIMSampleTransaction;
 
         public MockOpenHIM() {
             super(myTestConfig);
-            response = "{\"request\":{\"host\":\"127.0.0.1\",\"port\":\"5001\",\"path\":\"/services_received\",\"headers\":{\"content-type\":\"text/csv\"},\"querystring\":\"\",\"body\":\"Plant,PartNum,UOM\\r\\nDM,10010001MD,1000TB\",\"method\":\"POST\",\"timestamp\":\"2021-01-04T06:15:48.662Z\"},\"response\":{\"status\":202,\"headers\":{\"x-openhim-transactionid\":\"5ff2b29416a3c934156395d3\"},\"body\":\"\",\"timestamp\":\"2021-01-04T06:15:48.746Z\"},\"error\":null,\"childIDs\":[],\"canRerun\":true,\"autoRetry\":false,\"wasRerun\":false,\"_id\":\"5ff2b29416a3c934156395d3\",\"status\":\"Successful\",\"clientID\":\"5fec702016a3c93415637002\",\"channelID\":\"5fec6e2416a3c93415636f2d\",\"clientIP\":\"197.250.198.31\",\"routes\":[],\"orchestrations\":[],\"__v\":0}";
+            openHIMSampleTransaction = "{\"request\":{\"host\":\"127.0.0.1\",\"port\":\"5001\",\"path\":\"/services_received\",\"headers\":{\"content-type\":\"text/csv\"},\"querystring\":\"\",\"body\":\"Plant,PartNum,UOM\\r\\nDM,10010001MD,1000TB\",\"method\":\"POST\",\"timestamp\":\"2021-01-04T06:15:48.662Z\"},\"response\":{\"status\":202,\"headers\":{\"x-openhim-transactionid\":\"5ff2b29416a3c934156395d3\"},\"body\":\"\",\"timestamp\":\"2021-01-04T06:15:48.746Z\"},\"error\":null,\"childIDs\":[],\"canRerun\":true,\"autoRetry\":false,\"wasRerun\":false,\"_id\":\"5ff2b29416a3c934156395d3\",\"status\":\"Successful\",\"clientID\":\"5fec702016a3c93415637002\",\"channelID\":\"5fec6e2416a3c93415636f2d\",\"clientIP\":\"197.250.198.31\",\"routes\":[],\"orchestrations\":[],\"__v\":0}";
         }
 
         @Override
@@ -101,7 +101,7 @@ public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTe
                     Map<String, String> headers = new HashMap<>();
                     headers.put("Content-Type", "text/application/json");
 
-                    MediatorHTTPResponse mediatorHTTPResponse = new MediatorHTTPResponse((MediatorHTTPRequest) msg, response, 200, headers);//new FinishRequest(response, "text/plain", HttpStatus.SC_OK);
+                    MediatorHTTPResponse mediatorHTTPResponse = new MediatorHTTPResponse((MediatorHTTPRequest) msg, openHIMSampleTransaction, 200, headers);//new FinishRequest(response, "text/plain", HttpStatus.SC_OK);
                     ((MediatorHTTPRequest) msg).getRespondTo().tell(mediatorHTTPResponse, getSelf());
                 } else if (((MediatorHTTPRequest) msg).getMethod().equals("PUT")) {
                     JSONObject receivedUpdatedTransaction = new JSONObject(((MediatorHTTPRequest) msg).getBody());

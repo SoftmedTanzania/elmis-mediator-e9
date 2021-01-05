@@ -3,19 +3,19 @@ package tz.go.moh.him.elmis.mediator.e9.domain;
 import com.google.gson.annotations.SerializedName;
 
 public class ElmisAck {
-    int imported;
+    private int imported;
 
-    int updated;
+    private int updated;
 
-    int ignored;
+    private int ignored;
 
-    String status;
+    private String status;
 
     @SerializedName(value = "iL_TransactionIDNumber")
-    String iLTransactionIDNumber;
+    private String iLTransactionIDNumber;
 
     @SerializedName(value = "il_TransactionIDNumber")
-    String ilTransactionIDNumber;
+    private String ilTransactionIDNumber;
 
     public int getImported() {
         return imported;
