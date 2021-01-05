@@ -11,6 +11,7 @@ import org.openhim.mediator.engine.RegistrationConfig;
 import org.openhim.mediator.engine.RoutingTable;
 import org.openhim.mediator.engine.StartupActorsConfig;
 import tz.go.moh.him.elmis.mediator.e9.orchestator.DailyStockStatusOrchestrator;
+import tz.go.moh.him.elmis.mediator.e9.orchestator.ElmisDailyStockStatusAcknowledgementOrchestrator;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class MediatorMain {
 
         //TODO Configure routes here
         routingTable.addRoute("/elmis/daily_stock_status", DailyStockStatusOrchestrator.class);
+        routingTable.addRoute("/elmis/daily_stock_ACK", ElmisDailyStockStatusAcknowledgementOrchestrator.class);
 
         return routingTable;
     }
