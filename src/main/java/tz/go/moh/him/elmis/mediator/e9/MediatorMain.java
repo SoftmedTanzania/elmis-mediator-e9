@@ -25,7 +25,7 @@ public class MediatorMain {
         RoutingTable routingTable = new RoutingTable();
 
         routingTable.addRoute("/elmis/daily_stock_status", DailyStockStatusOrchestrator.class);
-        routingTable.addRoute("/elmis/daily_stock_ACK", ElmisDailyStockStatusAcknowledgementOrchestrator.class);
+        routingTable.addRoute("/elmis/daily_stock_status_ACK", ElmisDailyStockStatusAcknowledgementOrchestrator.class);
         routingTable.addRoute("/elmis/out_of_stock_notification", OutOfStockNotificationOrchestrator.class);
 
         return routingTable;
