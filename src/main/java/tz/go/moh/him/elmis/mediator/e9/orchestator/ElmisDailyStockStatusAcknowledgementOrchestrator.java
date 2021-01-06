@@ -69,8 +69,10 @@ public class ElmisDailyStockStatusAcknowledgementOrchestrator extends UntypedAct
         log.info("Updating OpenHIM Transaction with ELMIS ACK");
         if (elmisAck.getStatus().equals("Success")) {
             transaction.getJSONObject("response").put("status", HttpStatus.SC_OK);
+            transaction.put("status", "Successful");
         } else {
             transaction.getJSONObject("response").put("status", HttpStatus.SC_BAD_REQUEST);
+            transaction.put("status", "Failed");
         }
         transaction.getJSONObject("response").put("body", new Gson().toJson(elmisAck));
         transaction.getJSONObject("response").put("timestamp", new Timestamp(System.currentTimeMillis()));
