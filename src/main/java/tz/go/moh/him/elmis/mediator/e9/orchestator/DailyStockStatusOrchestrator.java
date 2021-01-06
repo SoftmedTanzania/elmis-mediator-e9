@@ -16,7 +16,6 @@ import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPResponse;
 import tz.go.moh.him.elmis.mediator.e9.domain.DailyStockStatus;
 import tz.go.moh.him.mediator.core.adapter.CsvAdapterUtils;
-import tz.go.moh.him.mediator.core.validator.DateValidatorUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -25,16 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_DATE_IS_OF_INVALID_FORMAT_IS_NOT_A_VALID_PAST_DATE;
 import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_INVALID_PAYLOAD;
 import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_REQUIRED_FIELDS_CHECK_FAILED;
 
 public class DailyStockStatusOrchestrator extends UntypedActor {
     private final MediatorConfig config;
+    private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     protected String errorMessage = "";
     protected MediatorHTTPRequest originalRequest;
-
-    private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     public DailyStockStatusOrchestrator(MediatorConfig config) {
         this.config = config;
@@ -102,10 +99,6 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
                 continue;
             }
 
-            if (!DateValidatorUtils.isValidPastDate(dailyStockStatus.getDate(), "yyyymmdd")) {
-                errorMessage += dailyStockStatus.getPartNum() + ERROR_DATE_IS_OF_INVALID_FORMAT_IS_NOT_A_VALID_PAST_DATE;
-                continue;
-            }
             //TODO implement additional data validations checks
             validReceivedList.add(dailyStockStatus);
         }
@@ -148,8 +141,8 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
             List<Pair<String, String>> params = new ArrayList<>();
 
             MediatorHTTPRequest forwardToElmisRequest = new MediatorHTTPRequest(
-                    (originalRequest).getRequestHandler(), getSelf(), "Sending Data to eLMIS", "POST", scheme,
-                    config.getProperty("elmis.host"), Integer.parseInt(config.getProperty("elmis.api.port")), config.getProperty("elmis.api.path"),
+                    (originalRequest).getRequestHandler(), getSelf(), "Sending Diaily Stock Status to eLMIS", "POST", scheme,
+                    config.getProperty("elmis.host"), Integer.parseInt(config.getProperty("elmis.api.port")), config.getProperty("elmis.api.daily_stock_status.path"),
                     msg, headers, params
             );
 
@@ -159,12 +152,6 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
     }
 
     private void finalizeResponse(MediatorHTTPResponse response) {
-        if (response.getStatusCode() == HttpStatus.SC_OK) {
-            FinishRequest finishRequest = new FinishRequest("Success", "text/plain", HttpStatus.SC_ACCEPTED);
-            (originalRequest).getRequestHandler().tell(finishRequest, getSelf());
-        } else {
-            (originalRequest).getRequestHandler().tell(response.toFinishRequest(), getSelf());
-        }
-
+        (originalRequest).getRequestHandler().tell(response.toFinishRequest(), getSelf());
     }
 }

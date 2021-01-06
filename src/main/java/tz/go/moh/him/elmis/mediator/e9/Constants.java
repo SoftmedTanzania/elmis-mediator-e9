@@ -6,7 +6,6 @@ public class Constants {
         String ERROR_REQUIRED_FIELDS_CHECK_FAILED = " - Required fields are empty;";
         String ERROR_INVALID_PAYLOAD = "Invalid payload;";
         String ERROR_REQUEST_MISSING_OPENHIM_TRANSACTION_ID = "Request missing openHIM TransactionID;";
-        String ERROR_DATE_IS_OF_INVALID_FORMAT_IS_NOT_A_VALID_PAST_DATE = " - date is of invalid format/is not a valid past date;";
 
     }
 }

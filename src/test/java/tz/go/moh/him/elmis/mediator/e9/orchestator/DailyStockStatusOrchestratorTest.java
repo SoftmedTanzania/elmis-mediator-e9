@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_DATE_IS_OF_INVALID_FORMAT_IS_NOT_A_VALID_PAST_DATE;
 import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_INVALID_PAYLOAD;
 
 public class DailyStockStatusOrchestratorTest extends BaseTest {
@@ -88,42 +87,6 @@ public class DailyStockStatusOrchestratorTest extends BaseTest {
             }
 
             assertTrue("Must send FinishRequest", foundResponse);
-        }};
-    }
-
-    @Test
-    public void testInValidDate() throws Exception {
-        assertNotNull(testConfig);
-
-        new JavaTestKit(system) {{
-            String invalidDate =
-                    "[{\"IL_IDNumber\":\"123456789\",\"Plant\":\"DM\",\"PartNum\":\"10010001MD\",\"UOM\":\"1000TB\",\"PartDescription\":\"ACETYLSALICYLIC ACID (ASPIRIN)  TABLETS 300MG\",\"OnHandQty\":0,\"Date\":\"Feb  1 2018  4:00AM\",\"MonthOfStock\":\"1\"},{\"IL_IDNumber\":\"123456789\",\"Plant\":\"DR\",\"PartNum\":\"10010001MD\",\"UOM\":\"1000TB\",\"PartDescription\":\"ACETYLSALICYLIC ACID (ASPIRIN)  TABLETS 300MG\",\"OnHandQty\":2,\"Date\":\"Feb  1 2018  4:00AM\",\"MonthOfStock\":\"2\"}]";
-            createActorAndSendRequest(system, testConfig, getRef(), invalidDate, DailyStockStatusOrchestrator.class, "/elmis/daily_stock_status");
-
-            final Object[] out =
-                    new ReceiveWhile<Object>(Object.class, duration("1 second")) {
-                        @Override
-                        protected Object match(Object msg) throws Exception {
-                            if (msg instanceof FinishRequest) {
-                                return msg;
-                            }
-                            throw noMatch();
-                        }
-                    }.get();
-
-            int responseStatus = 0;
-            String responseMessage = "";
-
-            for (Object o : out) {
-                if (o instanceof FinishRequest) {
-                    responseStatus = ((FinishRequest) o).getResponseStatus();
-                    responseMessage = ((FinishRequest) o).getResponse();
-                    break;
-                }
-            }
-
-            assertEquals(400, responseStatus);
-            assertTrue(responseMessage.contains(ERROR_DATE_IS_OF_INVALID_FORMAT_IS_NOT_A_VALID_PAST_DATE));
         }};
     }
 

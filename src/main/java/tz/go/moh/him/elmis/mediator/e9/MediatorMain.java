@@ -12,6 +12,7 @@ import org.openhim.mediator.engine.RoutingTable;
 import org.openhim.mediator.engine.StartupActorsConfig;
 import tz.go.moh.him.elmis.mediator.e9.orchestator.DailyStockStatusOrchestrator;
 import tz.go.moh.him.elmis.mediator.e9.orchestator.ElmisDailyStockStatusAcknowledgementOrchestrator;
+import tz.go.moh.him.elmis.mediator.e9.orchestator.OutOfStockNotificationOrchestrator;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +24,9 @@ public class MediatorMain {
     private static RoutingTable buildRoutingTable() throws RoutingTable.RouteAlreadyMappedException {
         RoutingTable routingTable = new RoutingTable();
 
-        //TODO Configure routes here
         routingTable.addRoute("/elmis/daily_stock_status", DailyStockStatusOrchestrator.class);
         routingTable.addRoute("/elmis/daily_stock_ACK", ElmisDailyStockStatusAcknowledgementOrchestrator.class);
+        routingTable.addRoute("/elmis/out_of_stock_notification", OutOfStockNotificationOrchestrator.class);
 
         return routingTable;
     }

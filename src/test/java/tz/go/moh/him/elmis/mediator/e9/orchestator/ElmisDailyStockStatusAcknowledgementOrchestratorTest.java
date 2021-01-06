@@ -74,15 +74,19 @@ public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTe
                     }.get();
 
             boolean foundResponse = false;
+            int responseStatus = 0;
 
             for (Object o : out) {
                 if (o instanceof FinishRequest) {
+                    responseStatus = ((FinishRequest) o).getResponseStatus();
                     foundResponse = true;
                     break;
                 }
             }
 
+
             assertTrue("Must send FinishRequest", foundResponse);
+            assertEquals(200, responseStatus);
         }};
     }
 
@@ -107,6 +111,7 @@ public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTe
                     JSONObject receivedUpdatedTransaction = new JSONObject(((MediatorHTTPRequest) msg).getBody());
 
                     assertEquals(200, receivedUpdatedTransaction.getJSONObject("response").getInt("status"));
+                    assertEquals("Successful", receivedUpdatedTransaction.getString("status"));
                     assertEquals(jsonElmisAckPayload, receivedUpdatedTransaction.getJSONObject("response").getString("body"));
                 }
             }
