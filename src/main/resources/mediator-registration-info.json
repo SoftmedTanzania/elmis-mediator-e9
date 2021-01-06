@@ -10,13 +10,27 @@
       "port": "3001",
       "path": "/elmis/daily_stock_status",
       "type": "http"
+    },
+    {
+      "name": "eLMIS Out of Stock Notification Route",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/elmis/out_of_stock_notification",
+      "type": "http"
+    },
+    {
+      "name": "eLMIS Daily Stock Status ACK Route",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/elmis/daily_stock_ACK",
+      "type": "http"
     }
   ],
   "defaultChannelConfig": [
     {
       "name": "eLMIS Daily Stock Count Mediator",
-      "urlPattern": "^/daily_stock_status$",
-      "description": "An openHIM mediator for handling  mediator for processing data  Daily Stock Count from MSD Epicor9 and sending it to eLMIS.",
+      "urlPattern": "^/elmis/daily_stock_status$",
+      "description": "An openHIM mediator for handling  mediator for processing Daily Stock Count from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
@@ -27,6 +41,38 @@
           "path": "/elmis/daily_stock_status",
           "type": "http",
           "primary": "true"
+        }
+      ]
+    },
+    {
+      "name": "eLMIS Out of Stock Notification Mediator",
+      "urlPattern": "^/elmis/daily_stock_status$",
+      "description": "An openHIM mediator for handling  mediator for processing Out of Stock Notifications from MSD Epicor9 to eLMIS.",
+      "type": "http",
+      "allow": ["elmis-mediator"],
+      "routes": [
+        {
+          "name": "eLMIS Out of Stock Notification Route",
+          "host": "localhost",
+          "port": "3001",
+          "path": "/elmis/out_of_stock_notification",
+          "type": "http"
+        }
+      ]
+    },
+    {
+      "name": "eLMIS Daily Stock Status ACK Mediator",
+      "urlPattern": "^/elmis/daily_stock_ACK",
+      "description": "An openHIM mediator for handling  Daily Stock Status Acknowledgments from eLMIS.",
+      "type": "http",
+      "allow": ["elmis-mediator"],
+      "routes": [
+        {
+          "name": "eLMIS Daily Stock Status ACK",
+          "host": "localhost",
+          "port": "3001",
+          "path": "/elmis/daily_stock_ACK",
+          "type": "http"
         }
       ]
     }
