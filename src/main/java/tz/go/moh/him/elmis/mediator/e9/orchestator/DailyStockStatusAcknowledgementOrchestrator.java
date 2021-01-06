@@ -20,13 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ElmisDailyStockStatusAcknowledgementOrchestrator extends UntypedActor {
+public class DailyStockStatusAcknowledgementOrchestrator extends UntypedActor {
     private final MediatorConfig config;
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     protected MediatorHTTPRequest originalRequest;
     protected ElmisAck elmisAck;
 
-    public ElmisDailyStockStatusAcknowledgementOrchestrator(MediatorConfig config) {
+    public DailyStockStatusAcknowledgementOrchestrator(MediatorConfig config) {
         this.config = config;
     }
 

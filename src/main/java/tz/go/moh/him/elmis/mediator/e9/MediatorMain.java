@@ -11,7 +11,7 @@ import org.openhim.mediator.engine.RegistrationConfig;
 import org.openhim.mediator.engine.RoutingTable;
 import org.openhim.mediator.engine.StartupActorsConfig;
 import tz.go.moh.him.elmis.mediator.e9.orchestator.DailyStockStatusOrchestrator;
-import tz.go.moh.him.elmis.mediator.e9.orchestator.ElmisDailyStockStatusAcknowledgementOrchestrator;
+import tz.go.moh.him.elmis.mediator.e9.orchestator.DailyStockStatusAcknowledgementOrchestrator;
 import tz.go.moh.him.elmis.mediator.e9.orchestator.OutOfStockNotificationOrchestrator;
 
 import java.io.File;
@@ -25,7 +25,7 @@ public class MediatorMain {
         RoutingTable routingTable = new RoutingTable();
 
         routingTable.addRoute("/elmis/daily_stock_status", DailyStockStatusOrchestrator.class);
-        routingTable.addRoute("/elmis/daily_stock_status_ACK", ElmisDailyStockStatusAcknowledgementOrchestrator.class);
+        routingTable.addRoute("/elmis/daily_stock_status_ACK", DailyStockStatusAcknowledgementOrchestrator.class);
         routingTable.addRoute("/elmis/out_of_stock_notification", OutOfStockNotificationOrchestrator.class);
 
         return routingTable;

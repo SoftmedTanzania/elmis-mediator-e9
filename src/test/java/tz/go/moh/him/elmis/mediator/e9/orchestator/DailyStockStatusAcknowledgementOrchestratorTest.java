@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTest {
+public class DailyStockStatusAcknowledgementOrchestratorTest extends BaseTest {
 
     private static final String jsonElmisAckPayload = "{\"imported\":0,\"updated\":0,\"ignored\":7382,\"status\":\"Success\",\"iL_TransactionIDNumber\":\"5ff2b29416a3c934156395d3\",\"il_TransactionIDNumber\":\"5ff2b29416a3c934156395d3\"}";
     private static MediatorConfig myTestConfig;
@@ -43,7 +43,7 @@ public class ElmisDailyStockStatusAcknowledgementOrchestratorTest extends BaseTe
     public void testMediatorHTTPRequest() throws Exception {
         assertNotNull(testConfig);
         new JavaTestKit(system) {{
-            final ActorRef serviceReceivedOrchestrator = system.actorOf(Props.create(ElmisDailyStockStatusAcknowledgementOrchestrator.class, testConfig));
+            final ActorRef serviceReceivedOrchestrator = system.actorOf(Props.create(DailyStockStatusAcknowledgementOrchestrator.class, testConfig));
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", "text/plain");
             MediatorHTTPRequest POST_Request = new MediatorHTTPRequest(
