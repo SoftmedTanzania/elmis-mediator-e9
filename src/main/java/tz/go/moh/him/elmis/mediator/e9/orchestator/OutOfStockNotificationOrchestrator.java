@@ -20,7 +20,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.*;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.CLOSE_TO_EXPIRE_ITEM_WITH_ITEM_CODE;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ELMIS_ORDER_NUMBER_IS_BLANK;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.FULL_FILLED_ITEM_WITH_ITEM_CODE;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.INVOICE_NUMBER_IS_BLANK;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.MSD_ORDER_NUMBER_IS_BLANK;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.PHASED_OUT_ITEM_WITH_ITEM_CODE;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.RATIONING_ITEM_WITH_ITEM_CODE;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.STOCK_OUT_ITEM_WITH_ITEM_CODE;
 
 public class OutOfStockNotificationOrchestrator extends UntypedActor {
     private final MediatorConfig config;
@@ -32,7 +40,34 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         this.config = config;
     }
 
-    public static boolean validateItemRequiredFields(OutOfStockNotification.Item item) {
+    /**
+     * Method for validating OutOfStockNotification full filled items
+     *
+     * @param fullFilledItems to be validated
+     * @return validation status whether true for valid or false for failing data validations.
+     */
+    public boolean validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItems fullFilledItems) {
+        if (StringUtils.isBlank(fullFilledItems.getItemDescription()))
+            return false;
+        if (StringUtils.isBlank(fullFilledItems.getItemCode()))
+            return false;
+        if (StringUtils.isBlank(fullFilledItems.getUom()))
+            return false;
+        try {
+            Long.parseLong(fullFilledItems.getQuantity());
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Method for validating OutOfStockNotification full filled items
+     *
+     * @param item to be validated, this could be stockOutItems, inSufficientFundingItems, rationingItems, closeToExpireItems or phasedOutItems
+     * @return validation status whether true for valid or false for failing data validations.
+     */
+    public boolean validateItemRequiredFields(OutOfStockNotification.Item item) {
         if (StringUtils.isBlank(item.getItemCode()))
             return false;
         if (StringUtils.isBlank(item.getItemDescription()))
@@ -48,17 +83,13 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         return true;
     }
 
-    public static boolean validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItems fullFilledItems) {
-        if (StringUtils.isBlank(fullFilledItems.getItemDescription()))
-            return false;
-        if (StringUtils.isBlank(fullFilledItems.getItemCode()))
-            return false;
-        if (StringUtils.isBlank(fullFilledItems.getUom()))
-            return false;
-        try {
-            Long.parseLong(fullFilledItems.getQuantity());
-        } catch (Exception e) {
-            return false;
+
+    public boolean validateItemsListRequiredFields(List<OutOfStockNotification.Item> items, String error) {
+        for (OutOfStockNotification.Item item : items) {
+            if (!validateItemRequiredFields(item)) {
+                errorMessage += String.format(error, item.getItemCode());
+                return false;
+            }
         }
         return true;
     }
@@ -107,57 +138,19 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         if (outOfStockNotification.getFullFilledItems() != null) {
             for (OutOfStockNotification.FullFilledItems fullFilledItems : outOfStockNotification.getFullFilledItems()) {
                 if (!validateFullFilledItemRequiredFields(fullFilledItems)) {
-                    errorMessage += FULL_FILLED_ITEM_WITH_ITEM_CODE + fullFilledItems.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
+                    errorMessage += String.format(FULL_FILLED_ITEM_WITH_ITEM_CODE, fullFilledItems.getItemCode());
                     validationStatus = false;
                 }
             }
         }
 
-        if (outOfStockNotification.getStockOutItems() != null) {
-            for (OutOfStockNotification.Item item : outOfStockNotification.getStockOutItems()) {
-                if (!validateItemRequiredFields(item)) {
-                    errorMessage += STOCK_OUT_ITEM_WITH_ITEM_CODE + item.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
-                    validationStatus = false;
-                }
-            }
+        if (!validateItemsListRequiredFields(outOfStockNotification.getStockOutItems(), STOCK_OUT_ITEM_WITH_ITEM_CODE) ||
+                !validateItemsListRequiredFields(outOfStockNotification.getInSufficientFundingItems(), IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE) ||
+                !validateItemsListRequiredFields(outOfStockNotification.getRationingItems(), RATIONING_ITEM_WITH_ITEM_CODE) ||
+                !validateItemsListRequiredFields(outOfStockNotification.getCloseToExpireItems(), CLOSE_TO_EXPIRE_ITEM_WITH_ITEM_CODE) ||
+                !validateItemsListRequiredFields(outOfStockNotification.getPhasedOutItems(), PHASED_OUT_ITEM_WITH_ITEM_CODE)) {
+            validationStatus = false;
         }
-
-        if (outOfStockNotification.getInSufficientFundingItems() != null) {
-            for (OutOfStockNotification.Item item : outOfStockNotification.getInSufficientFundingItems()) {
-                if (!validateItemRequiredFields(item)) {
-                    errorMessage += IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE + item.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
-                    validationStatus = false;
-                }
-            }
-        }
-
-        if (outOfStockNotification.getRationingItems() != null) {
-            for (OutOfStockNotification.Item item : outOfStockNotification.getRationingItems()) {
-                if (!validateItemRequiredFields(item)) {
-                    errorMessage += RATIONING_ITEM_WITH_ITEM_CODE + item.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
-                    validationStatus = false;
-                }
-            }
-        }
-
-        if (outOfStockNotification.getCloseToExpireItems() != null) {
-            for (OutOfStockNotification.Item item : outOfStockNotification.getCloseToExpireItems()) {
-                if (!validateItemRequiredFields(item)) {
-                    errorMessage += CLOSE_TO_EXPIRE_ITEM_WITH_ITEM_CODE + item.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
-                    validationStatus = false;
-                }
-            }
-        }
-
-        if (outOfStockNotification.getPhasedOutItems() != null) {
-            for (OutOfStockNotification.Item item : outOfStockNotification.getPhasedOutItems()) {
-                if (!validateItemRequiredFields(item)) {
-                    errorMessage += PHASED_OUT_ITEM_WITH_ITEM_CODE + item.getItemCode() + IS_MISSING_REQUIRED_FIELDS_ITEM_CODE_ITEM_DESCRIPTION_UOM_QUANTITY;
-                    validationStatus = false;
-                }
-            }
-        }
-
 
         if (!DateValidatorUtils.isValidPastDate(outOfStockNotification.getInvoiceDate(), "dd-mm-yyyy")) {
             errorMessage += "Invoice data is invalid format;";
