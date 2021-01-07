@@ -3,7 +3,7 @@ package tz.go.moh.him.elmis.mediator.e9.domain;
 import com.google.gson.Gson;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class OutOfStockNotificationTest {
 
