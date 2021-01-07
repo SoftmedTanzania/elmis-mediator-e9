@@ -2,7 +2,7 @@
   "urn": "urn:uuid:bb49a1b0-4ad0-11eb-833f-a1f936ef8af5",
   "version": "0.1.0",
   "name": "eLMIS Mediator",
-  "description": "An openHIM mediator for handling  mediator for processing data  from MSD Epicor9 and sending it to eLMIS.",
+  "description": "An openHIM mediator for handling  sharing  out of stock notification and daily stock status from MSD Epicor 9 to eLMIS.",
   "endpoints": [
     {
       "name": "eLMIS Daily Stock Status Route",
