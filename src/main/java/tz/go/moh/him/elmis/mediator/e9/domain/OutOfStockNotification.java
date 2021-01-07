@@ -24,7 +24,7 @@ public class OutOfStockNotification {
     private String invoiceTotal;
     private String legalNumber;
 
-    private List<FullFilledItems> fullFilledItems;
+    private List<FullFilledItem> fullFilledItems;
     private List<Item> stockOutItems;
     private List<Item> inSufficientFundingItems;
     private List<Item> rationingItems;
@@ -107,7 +107,7 @@ public class OutOfStockNotification {
         return legalNumber;
     }
 
-    public List<FullFilledItems> getFullFilledItems() {
+    public List<FullFilledItem> getFullFilledItems() {
         return fullFilledItems;
     }
 
@@ -131,7 +131,7 @@ public class OutOfStockNotification {
         return phasedOutItems;
     }
 
-    public static class FullFilledItems {
+    public static class FullFilledItem {
         private String itemCode;
         private String itemDescription;
         private String uom;

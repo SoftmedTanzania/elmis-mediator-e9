@@ -43,18 +43,18 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     /**
      * Method for validating OutOfStockNotification full filled items
      *
-     * @param fullFilledItems to be validated
+     * @param fullFilledItem to be validated
      * @return validation status whether true for valid or false for failing data validations.
      */
-    public boolean validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItems fullFilledItems) {
-        if (StringUtils.isBlank(fullFilledItems.getItemDescription()))
+    public boolean validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItem fullFilledItem) {
+        if (StringUtils.isBlank(fullFilledItem.getItemDescription()))
             return false;
-        if (StringUtils.isBlank(fullFilledItems.getItemCode()))
+        if (StringUtils.isBlank(fullFilledItem.getItemCode()))
             return false;
-        if (StringUtils.isBlank(fullFilledItems.getUom()))
+        if (StringUtils.isBlank(fullFilledItem.getUom()))
             return false;
         try {
-            Long.parseLong(fullFilledItems.getQuantity());
+            Long.parseLong(fullFilledItem.getQuantity());
         } catch (Exception e) {
             return false;
         }
@@ -88,6 +88,16 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         for (OutOfStockNotification.Item item : items) {
             if (!validateItemRequiredFields(item)) {
                 errorMessage += String.format(error, item.getItemCode());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean validateFullFilledItemListRequired(List<OutOfStockNotification.FullFilledItem> fullFilledItems, String error) {
+        for (OutOfStockNotification.FullFilledItem fullFilledItem : fullFilledItems) {
+            if (!validateFullFilledItemRequiredFields(fullFilledItem)) {
+                errorMessage += String.format(error, fullFilledItem.getItemCode());
                 return false;
             }
         }
@@ -135,15 +145,12 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             validationStatus = false;
         }
 
-        if (outOfStockNotification.getFullFilledItems() != null) {
-            for (OutOfStockNotification.FullFilledItems fullFilledItems : outOfStockNotification.getFullFilledItems()) {
-                if (!validateFullFilledItemRequiredFields(fullFilledItems)) {
-                    errorMessage += String.format(FULL_FILLED_ITEM_WITH_ITEM_CODE, fullFilledItems.getItemCode());
-                    validationStatus = false;
-                }
-            }
+        //Validating full filled items
+        if (!validateFullFilledItemListRequired(outOfStockNotification.getFullFilledItems(), FULL_FILLED_ITEM_WITH_ITEM_CODE)) {
+            validationStatus = false;
         }
 
+        //Validating stock out items, insufficient funding items, rationing items, close to expire items and phased out items
         if (!validateItemsListRequiredFields(outOfStockNotification.getStockOutItems(), STOCK_OUT_ITEM_WITH_ITEM_CODE) ||
                 !validateItemsListRequiredFields(outOfStockNotification.getInSufficientFundingItems(), IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE) ||
                 !validateItemsListRequiredFields(outOfStockNotification.getRationingItems(), RATIONING_ITEM_WITH_ITEM_CODE) ||
@@ -152,6 +159,7 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             validationStatus = false;
         }
 
+        //Validating invoice date
         if (!DateValidatorUtils.isValidPastDate(outOfStockNotification.getInvoiceDate(), "dd-mm-yyyy")) {
             errorMessage += "Invoice data is invalid format;";
             validationStatus = false;
@@ -159,6 +167,11 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         return validationStatus;
     }
 
+    /**
+     * Method for sending data to ELMIS
+     *
+     * @param msg body to be sent
+     */
     private void sendDataToElmis(String msg) {
         String scheme;
         if (config.getProperty("elmis.secure").equals("true")) {

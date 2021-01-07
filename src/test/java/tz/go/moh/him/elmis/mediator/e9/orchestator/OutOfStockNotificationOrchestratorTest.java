@@ -129,7 +129,6 @@ public class OutOfStockNotificationOrchestratorTest extends BaseTest {
                     }.get();
 
 
-
             boolean foundResponse = false;
             int responseStatus = 0;
             String responsePayload = "";
