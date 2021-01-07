@@ -20,6 +20,9 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ELMIS_ORDER_NUMBER_IS_BLANK;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.INVOICE_NUMBER_IS_BLANK;
+import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.MSD_ORDER_NUMBER_IS_BLANK;
 
 public class OutOfStockNotificationOrchestratorTest extends BaseTest {
     private static final String jsonPayload = "{\"invoiceNumber\":\"598357\",\"zone\":\"Muleba\",\"soldTo\":\"MZ510046\",\"soldToCustomerName\":\"Kaigala Health Center\",\"shipTo\":\"MZ510046\",\"shipToCustomerName\":\"Kaigala Health Center\",\"msdOrderNumber\":\"364509\",\"elmisOrderNumber\":\"18L\",\"invoiceDate\":\"28-07-2018\",\"shipVia\":\"Company Truck\",\"salesCategory\":\"ILS Sales\",\"paymentTerms\":\"On Account\",\"salesPerson\":\"Michael John\",\"comment\":\"Some comments\",\"invoiceLineTotal\":\"7,102,300.00\",\"invoicelineDiscount\":\"0.00\",\"invoiceMiscellanousCharges\":\"0.00\",\"invoiceTotal\":\"0.00\",\"legalNumber\":\"INML-018991\",\"fullFilledItems\":[{\"itemCode\":\"10010002BE\",\"itemDescription\":\"AMOXICILLIN CAPS\",\"uom\":\"1000CP\",\"quantity\":\"5\",\"batchSerialNo\":\"170595\",\"batchQuantity\":\"5\",\"expiryDate\":\"31-05-2020\",\"unitPrice\":\"31,500.00\",\"amount\":\"157500.00\"}],\"stockOutItems\":[{\"itemCode\":\"10010003MD\",\"itemDescription\":\"ALBENDAZOLE\",\"uom\":\"100TB\",\"quantity\":\"5\",\"missingItemStatus\":\"Out of Stock\"}],\"inSufficientFundingItems\":[{\"itemCode\":\"10010031MD\",\"itemDescription\":\"QUININE\",\"uom\":\"500TB\",\"quantity\":\"10\",\"missingItemStatus\":\"Insufficient Funding\"}],\"rationingItems\":[{\"itemCode\":\"10060024MD\",\"itemDescription\":\"DIAZEPAM\",\"uom\":\"10AMP\",\"quantity\":\"20\",\"missingItemStatus\":\"Rationing due to low stock\"}],\"closeToExpireItems\":[{\"itemCode\":\"10060025MD\",\"itemDescription\":\"CETIRIZINE\",\"uom\":\"100TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Close to expire\"}],\"phasedOutItems\":[{\"itemCode\":\"10020015MD\",\"itemDescription\":\"Amoxicillin Granules\",\"uom\":\"24TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Item phased out\"}]}";
@@ -88,6 +91,64 @@ public class OutOfStockNotificationOrchestratorTest extends BaseTest {
             assertTrue("Must send FinishRequest", foundResponse);
             assertEquals(200, responseStatus);
             assertEquals(elmisSampleResponse, responsePayload);
+        }};
+    }
+
+    @Test
+    public void testSendingAnInvalidOutOfStockNotificationRequest() throws Exception {
+        final String invalidOutOfStockNotifiation = "{\"invoiceNumber\":\"\",\"zone\":\"Muleba\",\"soldTo\":\"MZ510046\",\"soldToCustomerName\":\"Kaigala Health Center\",\"shipTo\":\"MZ510046\",\"shipToCustomerName\":\"Kaigala Health Center\",\"msdOrderNumber\":\"\",\"elmisOrderNumber\":\"\",\"invoiceDate\":\"28-07-2018\",\"shipVia\":\"Company Truck\",\"salesCategory\":\"ILS Sales\",\"paymentTerms\":\"On Account\",\"salesPerson\":\"Michael John\",\"comment\":\"Some comments\",\"invoiceLineTotal\":\"7,102,300.00\",\"invoicelineDiscount\":\"0.00\",\"invoiceMiscellanousCharges\":\"0.00\",\"invoiceTotal\":\"0.00\",\"legalNumber\":\"INML-018991\",\"fullFilledItems\":[{\"itemCode\":\"10010002BE\",\"itemDescription\":\"AMOXICILLIN CAPS\",\"uom\":\"\",\"quantity\":\"5\",\"batchSerialNo\":\"170595\",\"batchQuantity\":\"5\",\"expiryDate\":\"31-05-2020\",\"unitPrice\":\"31,500.00\",\"amount\":\"157500.00\"}],\"stockOutItems\":[{\"itemCode\":\"10010003MD\",\"itemDescription\":\"\",\"uom\":\"100TB\",\"quantity\":\"5\",\"missingItemStatus\":\"Out of Stock\"}],\"inSufficientFundingItems\":[{\"itemCode\":\"10010031MD\",\"itemDescription\":\"QUININE\",\"uom\":\"500TB\",\"quantity\":\"\",\"missingItemStatus\":\"Insufficient Funding\"}],\"rationingItems\":[{\"itemCode\":\"10060024MD\",\"itemDescription\":\"DIAZEPAM\",\"uom\":\"\",\"quantity\":\"20\",\"missingItemStatus\":\"Rationing due to low stock\"}],\"closeToExpireItems\":[{\"itemCode\":\"10060025MD\",\"itemDescription\":\"CETIRIZINE\",\"uom\":\"100TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Close to expire\"}],\"phasedOutItems\":[{\"itemCode\":\"10020015MD\",\"itemDescription\":\"Amoxicillin Granules\",\"uom\":\"24TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Item phased out\"}]}";
+        assertNotNull(testConfig);
+        new JavaTestKit(system) {{
+            final ActorRef serviceReceivedOrchestrator = system.actorOf(Props.create(OutOfStockNotificationOrchestrator.class, testConfig));
+            Map<String, String> headers = new HashMap<>();
+            MediatorHTTPRequest POST_Request = new MediatorHTTPRequest(
+                    getRef(),
+                    getRef(),
+                    "unit-test",
+                    "POST",
+                    "http",
+                    null,
+                    null,
+                    "/elmis/out_of_stock_notification",
+                    invalidOutOfStockNotifiation,
+                    headers,
+                    Collections.<Pair<String, String>>emptyList()
+            );
+
+            serviceReceivedOrchestrator.tell(POST_Request, getRef());
+
+            final Object[] out =
+                    new ReceiveWhile<Object>(Object.class, duration("5 seconds")) {
+                        @Override
+                        protected Object match(Object msg) throws Exception {
+                            if (msg instanceof FinishRequest) {
+                                return msg;
+                            }
+                            throw noMatch();
+                        }
+                    }.get();
+
+
+
+            boolean foundResponse = false;
+            int responseStatus = 0;
+            String responsePayload = "";
+
+            for (Object o : out) {
+                if (o instanceof FinishRequest) {
+                    foundResponse = true;
+                    responsePayload = ((FinishRequest) o).getResponse();
+                    responseStatus = ((FinishRequest) o).getResponseStatus();
+                    break;
+                }
+            }
+
+
+            assertTrue("Must send FinishRequest", foundResponse);
+            assertEquals(400, responseStatus);
+            assertTrue(responsePayload.contains(INVOICE_NUMBER_IS_BLANK));
+            assertTrue(responsePayload.contains(MSD_ORDER_NUMBER_IS_BLANK));
+            assertTrue(responsePayload.contains(ELMIS_ORDER_NUMBER_IS_BLANK));
         }};
     }
 
