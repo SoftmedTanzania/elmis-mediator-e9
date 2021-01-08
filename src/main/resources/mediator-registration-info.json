@@ -30,7 +30,7 @@
     {
       "name": "eLMIS Daily Stock Count Mediator",
       "urlPattern": "^/daily_stock_status$",
-      "description": "An openHIM mediator for handling  mediator for processing Daily Stock Count from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM mediator for handling  sharing of Daily Stock Count from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
@@ -47,7 +47,7 @@
     {
       "name": "eLMIS Daily Stock Status ACK Mediator",
       "urlPattern": "^/daily_stock_status_ACK$",
-      "description": "An openHIM mediator for handling  Daily Stock Status Acknowledgments from eLMIS.",
+      "description": "An openHIM mediator for handling Daily Stock Status Acknowledgments from eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
@@ -63,7 +63,7 @@
     {
       "name": "eLMIS Out of Stock Notification Mediator",
       "urlPattern": "^/out_of_stock_notification$",
-      "description": "An openHIM mediator for handling  mediator for processing Out of Stock Notifications from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM mediator for handling  sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
