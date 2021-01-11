@@ -4,13 +4,16 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.JavaTestKit;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.openhim.mediator.engine.MediatorConfig;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
 import org.openhim.mediator.engine.testing.TestingUtils;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +22,7 @@ public abstract class BaseTest {
 
     protected static ActorSystem system;
     protected MediatorConfig testConfig;
+    protected JSONObject errorMessageResource;
 
     @Before
     public void before() throws Exception {
@@ -27,6 +31,11 @@ public abstract class BaseTest {
         testConfig = new MediatorConfig();
         testConfig.setName("elmis-mediator-emr-tests");
         testConfig.setProperties("mediator-unit-test.properties");
+
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("error-messages.json");
+        if (stream != null) {
+            errorMessageResource = new JSONObject(IOUtils.toString(stream));
+        }
     }
 
     @After

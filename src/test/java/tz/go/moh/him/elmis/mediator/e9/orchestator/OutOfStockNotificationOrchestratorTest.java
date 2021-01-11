@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.testkit.JavaTestKit;
 import org.apache.commons.lang3.tuple.Pair;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.openhim.mediator.engine.messages.FinishRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
@@ -20,9 +21,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ELMIS_ORDER_NUMBER_IS_BLANK;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.INVOICE_NUMBER_IS_BLANK;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.MSD_ORDER_NUMBER_IS_BLANK;
 
 public class OutOfStockNotificationOrchestratorTest extends BaseTest {
     private static final String jsonPayload = "{\"invoiceNumber\":\"598357\",\"zone\":\"Muleba\",\"soldTo\":\"MZ510046\",\"soldToCustomerName\":\"Kaigala Health Center\",\"shipTo\":\"MZ510046\",\"shipToCustomerName\":\"Kaigala Health Center\",\"msdOrderNumber\":\"364509\",\"elmisOrderNumber\":\"18L\",\"invoiceDate\":\"28-07-2018\",\"shipVia\":\"Company Truck\",\"salesCategory\":\"ILS Sales\",\"paymentTerms\":\"On Account\",\"salesPerson\":\"Michael John\",\"comment\":\"Some comments\",\"invoiceLineTotal\":\"7,102,300.00\",\"invoicelineDiscount\":\"0.00\",\"invoiceMiscellanousCharges\":\"0.00\",\"invoiceTotal\":\"0.00\",\"legalNumber\":\"INML-018991\",\"fullFilledItems\":[{\"itemCode\":\"10010002BE\",\"itemDescription\":\"AMOXICILLIN CAPS\",\"uom\":\"1000CP\",\"quantity\":\"5\",\"batchSerialNo\":\"170595\",\"batchQuantity\":\"5\",\"expiryDate\":\"31-05-2020\",\"unitPrice\":\"31,500.00\",\"amount\":\"157500.00\"}],\"stockOutItems\":[{\"itemCode\":\"10010003MD\",\"itemDescription\":\"ALBENDAZOLE\",\"uom\":\"100TB\",\"quantity\":\"5\",\"missingItemStatus\":\"Out of Stock\"}],\"inSufficientFundingItems\":[{\"itemCode\":\"10010031MD\",\"itemDescription\":\"QUININE\",\"uom\":\"500TB\",\"quantity\":\"10\",\"missingItemStatus\":\"Insufficient Funding\"}],\"rationingItems\":[{\"itemCode\":\"10060024MD\",\"itemDescription\":\"DIAZEPAM\",\"uom\":\"10AMP\",\"quantity\":\"20\",\"missingItemStatus\":\"Rationing due to low stock\"}],\"closeToExpireItems\":[{\"itemCode\":\"10060025MD\",\"itemDescription\":\"CETIRIZINE\",\"uom\":\"100TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Close to expire\"}],\"phasedOutItems\":[{\"itemCode\":\"10020015MD\",\"itemDescription\":\"Amoxicillin Granules\",\"uom\":\"24TB\",\"quantity\":\"20\",\"missingItemStatus\":\"Item phased out\"}]}";
@@ -30,10 +28,12 @@ public class OutOfStockNotificationOrchestratorTest extends BaseTest {
             "\"invoiceNumber\": \"598357\",\n" +
             "\"message\":\"Received Successful\"\n" +
             "}\n";
+    protected JSONObject outOfStockNotificationErrorMessageResource;
 
     @Override
     public void before() throws Exception {
         super.before();
+        outOfStockNotificationErrorMessageResource = errorMessageResource.getJSONObject("OUT_OF_STOCK_NOTIFICATIONS_ERROR_MESSAGES");
         List<MockLauncher.ActorToLaunch> toLaunch = new LinkedList<>();
         toLaunch.add(new MockLauncher.ActorToLaunch("http-connector", MockElmis.class));
         TestingUtils.launchActors(system, testConfig.getName(), toLaunch);
@@ -145,9 +145,9 @@ public class OutOfStockNotificationOrchestratorTest extends BaseTest {
 
             assertTrue("Must send FinishRequest", foundResponse);
             assertEquals(400, responseStatus);
-            assertTrue(responsePayload.contains(INVOICE_NUMBER_IS_BLANK));
-            assertTrue(responsePayload.contains(MSD_ORDER_NUMBER_IS_BLANK));
-            assertTrue(responsePayload.contains(ELMIS_ORDER_NUMBER_IS_BLANK));
+            assertTrue(responsePayload.contains(outOfStockNotificationErrorMessageResource.getString("ERROR_INVOICE_NUMBER_IS_BLANK")));
+            assertTrue(responsePayload.contains(outOfStockNotificationErrorMessageResource.getString("ERROR_MSD_ORDER_NUMBER_IS_BLANK")));
+            assertTrue(responsePayload.contains(outOfStockNotificationErrorMessageResource.getString("ERROR_ELMIS_ORDER_NUMBER_IS_BLANK")));
         }};
     }
 

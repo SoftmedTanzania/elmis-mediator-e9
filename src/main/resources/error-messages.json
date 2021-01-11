@@ -1,0 +1,26 @@
+{
+  "DAILY_STOCK_STATUS_ERROR_MESSAGES": {
+    "ERROR_INVALID_PAYLOAD": "Error the payload is invalid",
+    "ERROR_PLANT_IS_BLANK": "Record failed validation, Plant must not be blank",
+    "ERROR_PART_NUM_IS_BLANK": "Record with plant %s failed validation, Part num must not be blank",
+    "ERROR_OUM_IS_BLANK": "Record with plant %s failed validation, UOM must not be blank",
+    "ERROR_PART_DESCRIPTION_IS_BLANK": "Record with plant %s failed validation, PartDescription must not be blank",
+    "ERROR_ON_HAND_QTY_IS_BLANK": "Record with plant %s failed validation, OnHandQty must not be blank",
+    "ERROR_MONTH_OF_STOCK_IS_BLANK": "Record with plant %s failed validation, MonthOfStock must not be blank",
+    "ERROR_DATE_IS_BLANK": "Record with plant %s failed validation, Date must not be blank",
+    "ERROR_DATE_IS_NOT_A_VALID_PAST_DATE": "Record with plant %s failed validation, Date is not a valid past date",
+    "ERROR_DATE_INVALID_FORMAT": "Record with plant %s failed validation, Date is not of a valid date format yyymmdd"
+  },
+  "OUT_OF_STOCK_NOTIFICATIONS_ERROR_MESSAGES": {
+    "ERROR_INVALID_PAYLOAD": "Error the payload is invalid",
+    "ERROR_ITEM_CODE_IS_BLANK": "Record failed validation, Item Code must not be blank",
+    "ERROR_ITEM_DESCRIPTION_IS_BLANK": "Record with Item Code %s failed validation, itemDescription must not be blank",
+    "ERROR_UOM_IS_BLANK": "Record with Item Code %s failed validation, Uom must not be blank",
+    "ERROR_QUANTITY_IS_BLANK": "Record with Item Code %s failed validation, Quantity must not be blank",
+    "ERROR_INVOICE_NUMBER_IS_BLANK": "Record failed validation, Invoice Number must not be blank",
+    "ERROR_MSD_ORDER_NUMBER_IS_BLANK": "Record failed validation, Msd Order Number must not be blank",
+    "ERROR_ELMIS_ORDER_NUMBER_IS_BLANK": "Record failed validation, eLMIS Order Number must not be blank",
+    "ERROR_INVOICE_DATE_IS_NOT_A_VALID_PAST_DATE": "Record failed validation,Invoice Date is not a valid past date",
+    "ERROR_INVOICE_DATE_FORMAT": "Record failed validation, Invoice Date format is not of the correct date format"
+  }
+}

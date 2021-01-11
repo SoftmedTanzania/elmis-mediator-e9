@@ -6,6 +6,7 @@ import akka.testkit.JavaTestKit;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.openhim.mediator.engine.messages.FinishRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
@@ -23,12 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ERROR_INVALID_PAYLOAD;
 
 public class DailyStockStatusOrchestratorTest extends BaseTest {
+    protected JSONObject dailyStockStatusErrorMessageResource;
     private static final String csvPayload =
             "Plant,PartNum,UOM,PartDescription,OnHandQty,Date,MonthOfStock\n" +
                     "DM,10010001MD,1000TB,ACETYLSALICYLIC ACID (ASPIRIN)  TABLETS 300MG,0,20201201,1";
@@ -37,6 +37,7 @@ public class DailyStockStatusOrchestratorTest extends BaseTest {
     public void before() throws Exception {
         super.before();
 
+        dailyStockStatusErrorMessageResource = errorMessageResource.getJSONObject("DAILY_STOCK_STATUS_ERROR_MESSAGES");
         List<MockLauncher.ActorToLaunch> toLaunch = new LinkedList<>();
         toLaunch.add(new MockLauncher.ActorToLaunch("http-connector", MockElmis.class));
         TestingUtils.launchActors(system, testConfig.getName(), toLaunch);
@@ -121,37 +122,51 @@ public class DailyStockStatusOrchestratorTest extends BaseTest {
             }
 
             assertEquals(400, responseStatus);
-            assertTrue(responseMessage.equals(ERROR_INVALID_PAYLOAD));
+            assertTrue(responseMessage.contains(dailyStockStatusErrorMessageResource.getString("ERROR_INVALID_PAYLOAD")));
+
         }};
     }
 
     @Test
     public void validateRequiredFields() {
-        DailyStockStatus dailyStockStatus = new DailyStockStatus();
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+        assertNotNull(testConfig);
 
-        dailyStockStatus.setPlant("DM");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+        new JavaTestKit(system) {{
+            String invalidPayload = "Plant,PartNum,UOM,PartDescription,OnHandQty,Date,MonthOfStock\n" +
+                    ",,,,,,";
+            createActorAndSendRequest(system, testConfig, getRef(), invalidPayload, DailyStockStatusOrchestrator.class, "/bed_occupancy");
 
-        dailyStockStatus.setPartNum("10010001MD");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+            final Object[] out =
+                    new ReceiveWhile<Object>(Object.class, duration("1 second")) {
+                        @Override
+                        protected Object match(Object msg) throws Exception {
+                            if (msg instanceof FinishRequest) {
+                                return msg;
+                            }
+                            throw noMatch();
+                        }
+                    }.get();
 
-        dailyStockStatus.setOum("1000TB");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+            String responseMessage = "";
+            int responseStatus = 0;
 
-        dailyStockStatus.setPartDescription("ACETYLSALICYLIC ACID (ASPIRIN)  TABLETS 300MG");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+            for (Object o : out) {
+                if (o instanceof FinishRequest) {
+                    responseStatus = ((FinishRequest) o).getResponseStatus();
+                    responseMessage = ((FinishRequest) o).getResponse();
+                    break;
+                }
+            }
 
-        dailyStockStatus.setOnHandQty("0");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
-
-        dailyStockStatus.setDate("20180101");
-        assertFalse(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
-
-        dailyStockStatus.setMonthOfStock("1");
-
-        //Valid payload
-        assertTrue(DailyStockStatusOrchestrator.validateRequiredFields(dailyStockStatus));
+            assertEquals(400, responseStatus);
+            assertTrue(responseMessage.contains(dailyStockStatusErrorMessageResource.getString("ERROR_PLANT_IS_BLANK")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_PART_NUM_IS_BLANK"),"")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_OUM_IS_BLANK"),"")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_PART_DESCRIPTION_IS_BLANK"),"")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_ON_HAND_QTY_IS_BLANK"),"")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_MONTH_OF_STOCK_IS_BLANK"),"")));
+            assertTrue(responseMessage.contains(String.format(dailyStockStatusErrorMessageResource.getString("ERROR_DATE_IS_BLANK"),"")));
+        }};
     }
 
 

@@ -5,103 +5,130 @@ import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
+import org.json.JSONObject;
 import org.openhim.mediator.engine.MediatorConfig;
 import org.openhim.mediator.engine.messages.FinishRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPRequest;
 import org.openhim.mediator.engine.messages.MediatorHTTPResponse;
 import tz.go.moh.him.elmis.mediator.e9.domain.OutOfStockNotification;
+import tz.go.moh.him.elmis.mediator.e9.domain.OutOfStockNotificationErrorMessage;
+import tz.go.moh.him.mediator.core.domain.ErrorMessage;
+import tz.go.moh.him.mediator.core.domain.ResultDetail;
 import tz.go.moh.him.mediator.core.validator.DateValidatorUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.CLOSE_TO_EXPIRE_ITEM_WITH_ITEM_CODE;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.ELMIS_ORDER_NUMBER_IS_BLANK;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.FULL_FILLED_ITEM_WITH_ITEM_CODE;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.INVOICE_NUMBER_IS_BLANK;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.MSD_ORDER_NUMBER_IS_BLANK;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.PHASED_OUT_ITEM_WITH_ITEM_CODE;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.RATIONING_ITEM_WITH_ITEM_CODE;
-import static tz.go.moh.him.elmis.mediator.e9.Constants.ErrorMessages.STOCK_OUT_ITEM_WITH_ITEM_CODE;
 
 public class OutOfStockNotificationOrchestrator extends UntypedActor {
     private final MediatorConfig config;
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
     protected MediatorHTTPRequest originalRequest;
-    protected String errorMessage = "";
+    protected JSONObject errorMessageResource;
+    protected OutOfStockNotificationErrorMessage errors = new OutOfStockNotificationErrorMessage();
+
 
     public OutOfStockNotificationOrchestrator(MediatorConfig config) {
         this.config = config;
+        InputStream stream = getClass().getClassLoader().getResourceAsStream("error-messages.json");
+        try {
+            if (stream != null) {
+                errorMessageResource = new JSONObject(IOUtils.toString(stream)).getJSONObject("OUT_OF_STOCK_NOTIFICATIONS_ERROR_MESSAGES");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Method for validating OutOfStockNotification full filled items
      *
      * @param fullFilledItem to be validated
-     * @return validation status whether true for valid or false for failing data validations.
+     * @return array list of validation results details incase of failed validations
      */
-    public boolean validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItem fullFilledItem) {
+    public List<ResultDetail> validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItem fullFilledItem) {
+        List<ResultDetail> resultDetailsList = new ArrayList<>();
         if (StringUtils.isBlank(fullFilledItem.getItemDescription()))
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+
         if (StringUtils.isBlank(fullFilledItem.getItemCode()))
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
+
         if (StringUtils.isBlank(fullFilledItem.getUom()))
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+
         try {
             Long.parseLong(fullFilledItem.getQuantity());
         } catch (Exception e) {
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
         }
-        return true;
+        return resultDetailsList;
     }
 
     /**
-     * Method for validating OutOfStockNotification full filled items
+     * Method for validating items
      *
-     * @param item to be validated, this could be stockOutItems, inSufficientFundingItems, rationingItems, closeToExpireItems or phasedOutItems
-     * @return validation status whether true for valid or false for failing data validations.
+     * @param item to be validated
+     * @return array list of validation results details incase of failed validations
      */
-    public boolean validateItemRequiredFields(OutOfStockNotification.Item item) {
+    public List<ResultDetail> validateItemRequiredFields(OutOfStockNotification.Item item) {
+        List<ResultDetail> resultDetailsList = new ArrayList<>();
+
         if (StringUtils.isBlank(item.getItemCode()))
-            return false;
-        if (StringUtils.isBlank(item.getItemDescription()))
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
+
         if (StringUtils.isBlank(item.getUom()))
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+
+        if (StringUtils.isBlank(item.getItemDescription()))
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+
         try {
             Long.parseLong(item.getQuantity());
         } catch (Exception e) {
-            return false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
         }
-
-        return true;
+        return resultDetailsList;
     }
 
 
-    public boolean validateItemsListRequiredFields(List<OutOfStockNotification.Item> items, String error) {
+    public List<ErrorMessage> validateItemsListRequiredFields(List<OutOfStockNotification.Item> items) {
+        List<ErrorMessage> errorMessagesList = new ArrayList<>();
         for (OutOfStockNotification.Item item : items) {
-            if (!validateItemRequiredFields(item)) {
-                errorMessage += String.format(error, item.getItemCode());
-                return false;
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setSource(new Gson().toJson(item));
+            List<ResultDetail> resultDetailsList = validateItemRequiredFields(item);
+
+            if (!resultDetailsList.isEmpty()) {
+                errorMessage.setResultsDetails(resultDetailsList);
+                errorMessagesList.add(errorMessage);
             }
         }
-        return true;
+        return errorMessagesList;
     }
 
-    public boolean validateFullFilledItemListRequired(List<OutOfStockNotification.FullFilledItem> fullFilledItems, String error) {
+    public List<ErrorMessage> validateFullFilledItemListRequired(List<OutOfStockNotification.FullFilledItem> fullFilledItems) {
+        List<ErrorMessage> errorMessagesList = new ArrayList<>();
         for (OutOfStockNotification.FullFilledItem fullFilledItem : fullFilledItems) {
-            if (!validateFullFilledItemRequiredFields(fullFilledItem)) {
-                errorMessage += String.format(error, fullFilledItem.getItemCode());
-                return false;
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setSource(new Gson().toJson(fullFilledItem));
+            List<ResultDetail> resultDetailsList = validateFullFilledItemRequiredFields(fullFilledItem);
+
+            if (!resultDetailsList.isEmpty()) {
+                errorMessage.setResultsDetails(resultDetailsList);
+                errorMessagesList.add(errorMessage);
             }
         }
-        return true;
+        return errorMessagesList;
     }
 
     @Override
@@ -116,7 +143,7 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             if (validateOutOfStockNotification(outOfStockNotification)) {
                 sendDataToElmis(((MediatorHTTPRequest) msg).getBody());
             } else {
-                FinishRequest finishRequest = new FinishRequest(errorMessage, "text/plain", HttpStatus.SC_BAD_REQUEST);
+                FinishRequest finishRequest = new FinishRequest(new Gson().toJson(errors), "text/plain", HttpStatus.SC_BAD_REQUEST);
                 (originalRequest).getRequestHandler().tell(finishRequest, getSelf());
             }
         } else if (msg instanceof MediatorHTTPResponse) { //respond
@@ -130,40 +157,71 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     protected boolean validateOutOfStockNotification(OutOfStockNotification outOfStockNotification) {
         boolean validationStatus = true;
 
+        ErrorMessage errorMessage = new ErrorMessage();
+        errorMessage.setSource(new Gson().toJson(outOfStockNotification));
+
+        List<ResultDetail> resultDetailsList = new ArrayList<>();
+
         if (StringUtils.isBlank(outOfStockNotification.getInvoiceNumber())) {
-            errorMessage += INVOICE_NUMBER_IS_BLANK;
-            validationStatus = false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_INVOICE_NUMBER_IS_BLANK"), null));
         }
 
         if (StringUtils.isBlank(outOfStockNotification.getMsdOrderNumber())) {
-            errorMessage += MSD_ORDER_NUMBER_IS_BLANK;
-            validationStatus = false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_MSD_ORDER_NUMBER_IS_BLANK"), null));
         }
 
         if (StringUtils.isBlank(outOfStockNotification.getElmisOrderNumber())) {
-            errorMessage += ELMIS_ORDER_NUMBER_IS_BLANK;
-            validationStatus = false;
-        }
-
-        //Validating full filled items
-        if (!validateFullFilledItemListRequired(outOfStockNotification.getFullFilledItems(), FULL_FILLED_ITEM_WITH_ITEM_CODE)) {
-            validationStatus = false;
-        }
-
-        //Validating stock out items, insufficient funding items, rationing items, close to expire items and phased out items
-        if (!validateItemsListRequiredFields(outOfStockNotification.getStockOutItems(), STOCK_OUT_ITEM_WITH_ITEM_CODE) ||
-                !validateItemsListRequiredFields(outOfStockNotification.getInSufficientFundingItems(), IN_SUFFICIENT_FUNDING_ITEM_WITH_ITEM_CODE) ||
-                !validateItemsListRequiredFields(outOfStockNotification.getRationingItems(), RATIONING_ITEM_WITH_ITEM_CODE) ||
-                !validateItemsListRequiredFields(outOfStockNotification.getCloseToExpireItems(), CLOSE_TO_EXPIRE_ITEM_WITH_ITEM_CODE) ||
-                !validateItemsListRequiredFields(outOfStockNotification.getPhasedOutItems(), PHASED_OUT_ITEM_WITH_ITEM_CODE)) {
-            validationStatus = false;
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ELMIS_ORDER_NUMBER_IS_BLANK"), null));
         }
 
         //Validating invoice date
-        if (!DateValidatorUtils.isValidPastDate(outOfStockNotification.getInvoiceDate(), "dd-mm-yyyy")) {
-            errorMessage += "Invoice data is invalid format;";
-            validationStatus = false;
+        try {
+            if (!DateValidatorUtils.isValidPastDate(outOfStockNotification.getInvoiceDate(), "dd-mm-yyyy")) {
+                resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_INVOICE_DATE_IS_NOT_A_VALID_PAST_DATE"), null));
+            }
+        } catch (ParseException e) {
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_INVOICE_DATE_FORMAT"), tz.go.moh.him.mediator.core.utils.StringUtils.writeStackTraceToString(e)));
         }
+
+
+        //Validating full filled items
+        Map<String, List<ErrorMessage>> errorMessagesMap = new HashMap<>();
+
+        List<ErrorMessage> fullFilledItemsErrors = validateFullFilledItemListRequired(outOfStockNotification.getFullFilledItems());
+        if (!fullFilledItemsErrors.isEmpty())
+            errorMessagesMap.put("fullFilledItems", fullFilledItemsErrors);
+
+        List<ErrorMessage> stockOutItemsErrors = validateItemsListRequiredFields(outOfStockNotification.getStockOutItems());
+        if (!stockOutItemsErrors.isEmpty())
+            errorMessagesMap.put("stockOutItems", stockOutItemsErrors);
+
+        List<ErrorMessage> inSufficientFundingItemsErrors = validateItemsListRequiredFields(outOfStockNotification.getInSufficientFundingItems());
+        if (!inSufficientFundingItemsErrors.isEmpty())
+            errorMessagesMap.put("inSufficientFundingItems", inSufficientFundingItemsErrors);
+
+        List<ErrorMessage> rationingItemsErrors = validateItemsListRequiredFields(outOfStockNotification.getRationingItems());
+        if (!rationingItemsErrors.isEmpty())
+            errorMessagesMap.put("rationingItems", rationingItemsErrors);
+
+        List<ErrorMessage> closeToExpireItemsErrors = validateItemsListRequiredFields(outOfStockNotification.getCloseToExpireItems());
+        if (!closeToExpireItemsErrors.isEmpty())
+            errorMessagesMap.put("closeToExpireItems", closeToExpireItemsErrors);
+
+        List<ErrorMessage> phasedOutItemsItemsErrors = validateItemsListRequiredFields(outOfStockNotification.getPhasedOutItems());
+        if (!phasedOutItemsItemsErrors.isEmpty())
+            errorMessagesMap.put("phasedOutItems", phasedOutItemsItemsErrors);
+
+        if (resultDetailsList.size() > 0) {
+            validationStatus = false;
+            errorMessage.setResultsDetails(resultDetailsList);
+            errors.setErrorMessages(Arrays.asList(errorMessage));
+        }
+
+        if (errorMessagesMap.size() > 0) {
+            validationStatus = false;
+            errors.setItemsErrorMessages(errorMessagesMap);
+        }
+
         return validationStatus;
     }
 
