@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class OutOfStockNotificationErrorMessage {
-    List<ErrorMessage> errorMessages = new ArrayList<>();
+    private List<ErrorMessage> errorMessages = new ArrayList<>();
     private Map<String, List<ErrorMessage>> itemsErrorMessages = new HashMap<>();
 
     public List<ErrorMessage> getErrorMessages() {
