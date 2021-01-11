@@ -1,31 +1,78 @@
 {
   "urn": "urn:uuid:bb49a1b0-4ad0-11eb-833f-a1f936ef8af5",
   "version": "0.1.0",
-  "name": "HFR Mediator",
-  "description": "An openHIM mediator for handling sharing of health facilities infomation from Health Facility Registry to other health systems",
+  "name": "eLMIS Mediator",
+  "description": "An openHIM mediator for handling  sharing  out of stock notification and daily stock status from MSD Epicor 9 to eLMIS.",
   "endpoints": [
     {
-      "name": "HFR Mediator Route",
+      "name": "eLMIS Daily Stock Status Route",
       "host": "localhost",
       "port": "3001",
-      "path": "/hfr",
+      "path": "/elmis/daily_stock_status",
+      "type": "http"
+    },
+    {
+      "name": "eLMIS Daily Stock Status ACK Route",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/elmis/daily_stock_status_ACK",
+      "type": "http"
+    },
+    {
+      "name": "eLMIS Out of Stock Notification Route",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/elmis/out_of_stock_notification",
       "type": "http"
     }
   ],
   "defaultChannelConfig": [
     {
-      "name": "HFR Mediator",
-      "urlPattern": "^/hfr$",
+      "name": "eLMIS Daily Stock Count Mediator",
+      "urlPattern": "^/daily_stock_status$",
+      "description": "An openHIM mediator for handling  sharing of Daily Stock Count from MSD Epicor9 to eLMIS.",
       "type": "http",
-      "allow": ["hfrmediator"],
+      "allow": ["elmis-mediator"],
       "routes": [
         {
-          "name": "HFR Mediator Route",
+          "name": "eLMIS Daily Stock Status Route",
           "host": "localhost",
           "port": "3001",
-          "path": "/hfr",
+          "path": "/elmis/daily_stock_status",
           "type": "http",
           "primary": "true"
+        }
+      ]
+    },
+    {
+      "name": "eLMIS Daily Stock Status ACK Mediator",
+      "urlPattern": "^/daily_stock_status_ACK$",
+      "description": "An openHIM mediator for handling Daily Stock Status Acknowledgments from eLMIS.",
+      "type": "http",
+      "allow": ["elmis-mediator"],
+      "routes": [
+        {
+          "name": "eLMIS Daily Stock Status ACK",
+          "host": "localhost",
+          "port": "3001",
+          "path": "/elmis/daily_stock_status_ACK",
+          "type": "http"
+        }
+      ]
+    },
+    {
+      "name": "eLMIS Out of Stock Notification Mediator",
+      "urlPattern": "^/out_of_stock_notification$",
+      "description": "An openHIM mediator for handling  sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
+      "type": "http",
+      "allow": ["elmis-mediator"],
+      "routes": [
+        {
+          "name": "eLMIS Out of Stock Notification Route",
+          "host": "localhost",
+          "port": "3001",
+          "path": "/elmis/out_of_stock_notification",
+          "type": "http"
         }
       ]
     }
