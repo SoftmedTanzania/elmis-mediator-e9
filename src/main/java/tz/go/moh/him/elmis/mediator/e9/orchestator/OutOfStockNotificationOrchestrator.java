@@ -29,14 +29,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents Out Of Stock Notification orchestrator.
+ */
 public class OutOfStockNotificationOrchestrator extends UntypedActor {
+    /**
+     * The mediator configuration.
+     */
     private final MediatorConfig config;
+
+    /**
+     * The logger instance.
+     */
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+
+    /**
+     * Represents a mediator request.
+     */
     protected MediatorHTTPRequest originalRequest;
+
+    /**
+     * Represents an Error Messages Definition Resource Object defined in <a href="file:../resources/error-messages.json">/resources/error-messages.json</a>.
+     */
     protected JSONObject errorMessageResource;
+
+    /**
+     * Represents a list of error messages, if any,that have been caught during payload data validation to be returned to the source system as response.
+     */
     protected OutOfStockNotificationErrorMessage errors = new OutOfStockNotificationErrorMessage();
 
-
+    /**
+     * Initializes a new instance of the {@link OutOfStockNotificationOrchestrator} class.
+     *
+     * @param config The mediator configuration.
+     */
     public OutOfStockNotificationOrchestrator(MediatorConfig config) {
         this.config = config;
         InputStream stream = getClass().getClassLoader().getResourceAsStream("error-messages.json");
@@ -50,7 +76,7 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     }
 
     /**
-     * Method for validating OutOfStockNotification full filled items
+     * Method for validating OutOfStockNotification full filled item
      *
      * @param fullFilledItem to be validated
      * @return array list of validation results details incase of failed validations
@@ -75,10 +101,10 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     }
 
     /**
-     * Method for validating items
+     * Method for validating item
      *
      * @param item to be validated
-     * @return array list of validation results details incase of failed validations
+     * @return array list of validation results details in case of failed validations
      */
     public List<ResultDetail> validateItemRequiredFields(OutOfStockNotification.Item item) {
         List<ResultDetail> resultDetailsList = new ArrayList<>();
@@ -101,6 +127,12 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     }
 
 
+    /**
+     * Method for validating a list of items list
+     *
+     * @param items to be validated
+     * @return array list of validation results details incase of failed validations
+     */
     public List<ErrorMessage> validateItemsListRequiredFields(List<OutOfStockNotification.Item> items) {
         List<ErrorMessage> errorMessagesList = new ArrayList<>();
         for (OutOfStockNotification.Item item : items) {
@@ -116,6 +148,12 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         return errorMessagesList;
     }
 
+    /**
+     * Method for validating OutOfStockNotification full filled items list
+     *
+     * @param fullFilledItems to be validated
+     * @return array list of validation results details incase of failed validations
+     */
     public List<ErrorMessage> validateFullFilledItemListRequired(List<OutOfStockNotification.FullFilledItem> fullFilledItems) {
         List<ErrorMessage> errorMessagesList = new ArrayList<>();
         for (OutOfStockNotification.FullFilledItem fullFilledItem : fullFilledItems) {
@@ -131,6 +169,11 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         return errorMessagesList;
     }
 
+    /**
+     * Handles the received message.
+     *
+     * @param msg The received message.
+     */
     @Override
     public void onReceive(Object msg) {
         if (msg instanceof MediatorHTTPRequest) {
@@ -148,12 +191,18 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             }
         } else if (msg instanceof MediatorHTTPResponse) { //respond
             log.info("Received response from eLMIS");
-            finalizeResponse((MediatorHTTPResponse) msg);
+            (originalRequest).getRequestHandler().tell(((MediatorHTTPResponse) msg).toFinishRequest(), getSelf());
         } else {
             unhandled(msg);
         }
     }
 
+    /**
+     * Handles data validations
+     *
+     * @param outOfStockNotification object to be validated
+     * @return boolean true if all data validations passed, False in case of failures
+     */
     protected boolean validateOutOfStockNotification(OutOfStockNotification outOfStockNotification) {
         boolean validationStatus = true;
 
@@ -251,9 +300,5 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
 
         ActorSelection httpConnector = getContext().actorSelection(config.userPathFor("http-connector"));
         httpConnector.tell(forwardToElmisRequest, getSelf());
-    }
-
-    private void finalizeResponse(MediatorHTTPResponse response) {
-        (originalRequest).getRequestHandler().tell(response.toFinishRequest(), getSelf());
     }
 }

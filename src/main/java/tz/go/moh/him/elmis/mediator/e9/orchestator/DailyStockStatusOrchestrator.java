@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.json.JSONObject;
 import org.openhim.mediator.engine.MediatorConfig;
 import org.openhim.mediator.engine.messages.FinishRequest;
@@ -30,13 +29,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents Daily Stock Status orchestrator.
+ */
 public class DailyStockStatusOrchestrator extends UntypedActor {
+    /**
+     * The mediator configuration.
+     */
     private final MediatorConfig config;
+
+    /**
+     * The logger instance.
+     */
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
+
+    /**
+     * Represents a mediator request.
+     */
     protected MediatorHTTPRequest originalRequest;
+
+    /**
+     * Represents an Error Messages Definition Resource Object defined in <a href="file:../resources/error-messages.json">/resources/error-messages.json</a>.
+     */
     protected JSONObject errorMessageResource;
+
+    /**
+     * Represents a list of error messages, if any,that have been caught during payload data validation to be returned to the source system as response.
+     */
     protected List<ErrorMessage> errorMessages = new ArrayList<>();
 
+    /**
+     * Initializes a new instance of the {@link DailyStockStatusOrchestrator} class.
+     *
+     * @param config The mediator configuration.
+     */
     public DailyStockStatusOrchestrator(MediatorConfig config) {
         this.config = config;
         InputStream stream = getClass().getClassLoader().getResourceAsStream("error-messages.json");
@@ -81,6 +107,11 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
         return resultDetailsList;
     }
 
+    /**
+     * Handles the received message.
+     *
+     * @param msg The received message.
+     */
     @Override
     public void onReceive(Object msg) throws Exception {
         if (msg instanceof MediatorHTTPRequest) {
@@ -119,12 +150,18 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
             sendDataToElmis(new Gson().toJson(validatedObjects));
         } else if (msg instanceof MediatorHTTPResponse) { //respond
             log.info("Received response from eLMIS");
-            finalizeResponse((MediatorHTTPResponse) msg);
+            (originalRequest).getRequestHandler().tell(((MediatorHTTPResponse) msg).toFinishRequest(), getSelf());
         } else {
             unhandled(msg);
         }
     }
 
+    /**
+     * Handles setting of openHIM Transaction Ids to every received Daily Stock Status to be sent to ELMIS
+     *
+     * @param openHimTransactionId openHIM transaction Id obtained from request from the OpenHIM
+     * @param receivedList         list of Daily Stock Status to be sent to eLMIS
+     */
     protected void updatePayloadListWithOpenHimTransactionId(String openHimTransactionId, List<DailyStockStatus> receivedList) {
         //update message to send to eLMIS
         for (DailyStockStatus dailyStockStatus : receivedList) {
@@ -132,6 +169,12 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
         }
     }
 
+    /**
+     * Handles data validations
+     *
+     * @param receivedList array list of the objects to be validated
+     * @return list of valid objects that passed data validations
+     */
     protected List<DailyStockStatus> validateData(List<DailyStockStatus> receivedList) {
         List<DailyStockStatus> validReceivedList = new ArrayList<>();
 
@@ -161,6 +204,13 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
         return validReceivedList;
     }
 
+    /**
+     * Handle Conversion the msg string payload to DailyStockStatus list
+     *
+     * @param msg payload to be converted
+     * @return list of DailyStockStatus
+     * @throws IOException if an I/O exception occurs
+     */
     protected List<DailyStockStatus> convertMessageBodyToPojoList(String msg) throws IOException {
         List<DailyStockStatus> dailyStockStatusList;
         try {
@@ -173,7 +223,12 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
         return dailyStockStatusList;
     }
 
-    private void sendDataToElmis(String msg) throws IOException, XmlPullParserException {
+    /**
+     * Handle sending of data to eLMIS
+     *
+     * @param msg to be sent
+     */
+    private void sendDataToElmis(String msg) {
         if (!errorMessages.isEmpty()) {
             FinishRequest finishRequest = new FinishRequest(new Gson().toJson(errorMessages), "text/json", HttpStatus.SC_BAD_REQUEST);
             (originalRequest).getRequestHandler().tell(finishRequest, getSelf());
@@ -199,9 +254,5 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
             ActorSelection httpConnector = getContext().actorSelection(config.userPathFor("http-connector"));
             httpConnector.tell(forwardToElmisRequest, getSelf());
         }
-    }
-
-    private void finalizeResponse(MediatorHTTPResponse response) {
-        (originalRequest).getRequestHandler().tell(response.toFinishRequest(), getSelf());
     }
 }

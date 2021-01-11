@@ -2,7 +2,7 @@ package tz.go.moh.him.elmis.mediator.e9.domain;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ElmisAck {
+public class Ack {
     private int imported;
 
     private int updated;
