@@ -28,9 +28,9 @@
   ],
   "defaultChannelConfig": [
     {
-      "name": "eLMIS Daily Stock Count Mediator",
+      "name": "eLMIS Daily Stock Status Mediator",
       "urlPattern": "^/daily_stock_status$",
-      "description": "An openHIM mediator for handling  sharing of Daily Stock Count from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM mediator for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
