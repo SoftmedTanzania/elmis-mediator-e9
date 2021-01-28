@@ -84,18 +84,18 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     public List<ResultDetail> validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItem fullFilledItem) {
         List<ResultDetail> resultDetailsList = new ArrayList<>();
         if (StringUtils.isBlank(fullFilledItem.getItemDescription()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_DESCRIPTION_IS_BLANK"), fullFilledItem.getItemCode()), null));
 
         if (StringUtils.isBlank(fullFilledItem.getItemCode()))
             resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
 
         if (StringUtils.isBlank(fullFilledItem.getUom()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_UOM_IS_BLANK"), fullFilledItem.getItemCode()), null));
 
         try {
             Long.parseLong(fullFilledItem.getQuantity());
         } catch (Exception e) {
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_QUANTITY_IS_BLANK"), fullFilledItem.getItemCode()), null));
         }
         return resultDetailsList;
     }
@@ -113,15 +113,15 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
 
         if (StringUtils.isBlank(item.getUom()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_UOM_IS_BLANK"), item.getItemCode()), null));
 
         if (StringUtils.isBlank(item.getItemDescription()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_DESCRIPTION_IS_BLANK"), item.getItemCode()), null));
 
         try {
             Long.parseLong(item.getQuantity());
         } catch (Exception e) {
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_QUANTITY_IS_BLANK"), item.getItemCode()), null));
         }
         return resultDetailsList;
     }
