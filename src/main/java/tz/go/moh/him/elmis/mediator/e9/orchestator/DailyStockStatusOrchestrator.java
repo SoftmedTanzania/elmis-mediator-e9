@@ -237,18 +237,34 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
             headers.put("Content-Type", "application/json");
 
             String scheme;
-            if (config.getProperty("elmis.secure").equals("true")) {
-                scheme = "https";
+            String host;
+            String path;
+            int portNumber;
+
+            if (config.getDynamicConfig().isEmpty()) {
+                if (config.getProperty("elmis.secure").equals("true")) {
+                    scheme = "https";
+                } else {
+                    scheme = "http";
+                }
+
+                host = config.getProperty("elmis.host");
+                portNumber = Integer.parseInt(config.getProperty("elmis.api.port"));
+                path = config.getProperty("elmis.api.daily_stock_status.path");
             } else {
-                scheme = "http";
+                JSONObject connectionProperties = new JSONObject(config.getDynamicConfig()).getJSONObject("elmisConnectionProperties");
+
+                host = connectionProperties.getString("elmisHost");
+                portNumber = connectionProperties.getInt("elmisPort");
+                path = connectionProperties.getString("elmisDailyStockStatusPath");
+                scheme = connectionProperties.getString("elmisScheme");
             }
 
             List<Pair<String, String>> params = new ArrayList<>();
 
             MediatorHTTPRequest forwardToElmisRequest = new MediatorHTTPRequest(
                     (originalRequest).getRequestHandler(), getSelf(), "Sending Diaily Stock Status to eLMIS", "POST", scheme,
-                    config.getProperty("elmis.host"), Integer.parseInt(config.getProperty("elmis.api.port")), config.getProperty("elmis.api.daily_stock_status.path"),
-                    msg, headers, params
+                    host, portNumber, path, msg, headers, params
             );
 
             ActorSelection httpConnector = getContext().actorSelection(config.userPathFor("http-connector"));

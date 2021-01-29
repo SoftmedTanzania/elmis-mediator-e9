@@ -1,7 +1,7 @@
 {
   "urn": "urn:uuid:bb49a1b0-4ad0-11eb-833f-a1f936ef8af5",
   "version": "0.1.0",
-  "name": "eLMIS Mediator",
+  "name": "MSD Epicor 9 to eLMIS Mediator",
   "description": "An openHIM mediator for handling  sharing  out of stock notification and daily stock status from MSD Epicor 9 to eLMIS.",
   "endpoints": [
     {
@@ -28,9 +28,9 @@
   ],
   "defaultChannelConfig": [
     {
-      "name": "eLMIS Daily Stock Count Mediator",
+      "name": "eLMIS Daily Stock Status Mediator",
       "urlPattern": "^/daily_stock_status$",
-      "description": "An openHIM mediator for handling  sharing of Daily Stock Count from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM mediator for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": ["elmis-mediator"],
       "routes": [
@@ -73,6 +73,50 @@
           "port": "3001",
           "path": "/elmis/out_of_stock_notification",
           "type": "http"
+        }
+      ]
+    }
+  ],
+  "configDefs": [
+    {
+      "param": "elmisConnectionProperties",
+      "displayName": "eLMIS Connection Properties",
+      "description": "Configuration to set the hostname, port and path for the eLMIS server",
+      "type": "struct",
+      "template": [
+        {
+          "param": "elmisHost",
+          "displayName": "eLMIS Server Host Name",
+          "description": "IP address/hostname of the eLMIS server. e.g 192.168.1.1",
+          "type": "string"
+        },
+        {
+          "param": "elmisPort",
+          "displayName": "eLMIS Port Number",
+          "description": "The port number of that the eLMIS server is running on. e.g 8080",
+          "type": "number"
+        },
+        {
+          "param": "elmisDailyStockStatusPath",
+          "displayName": "eLMIS Daily Stock Status API Path",
+          "description": "The path to the endpoint for receiving daily stock status data from the HIM. eg /elmis/daily-stock-status",
+          "type": "string"
+        },
+        {
+          "param": "elmisOutOfStockNotificationPath",
+          "displayName": "eLMIS Out of Stock Notification API Path",
+          "description": "The path to the endpoint for receiving Out of Stock Notification data from the HIM. eg /elmis/out-of-stock-notification",
+          "type": "string"
+        },
+        {
+          "param": "elmisScheme",
+          "displayName": "eLMIS Scheme",
+          "description": "Whether the eLMIS server is using HTTP or HTTPS requests",
+          "type": "option",
+          "values": [
+            "http",
+            "https"
+          ]
         }
       ]
     }

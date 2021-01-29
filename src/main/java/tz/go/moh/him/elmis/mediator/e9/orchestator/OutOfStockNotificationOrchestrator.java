@@ -84,18 +84,18 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
     public List<ResultDetail> validateFullFilledItemRequiredFields(OutOfStockNotification.FullFilledItem fullFilledItem) {
         List<ResultDetail> resultDetailsList = new ArrayList<>();
         if (StringUtils.isBlank(fullFilledItem.getItemDescription()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_DESCRIPTION_IS_BLANK"), fullFilledItem.getItemCode()), null));
 
         if (StringUtils.isBlank(fullFilledItem.getItemCode()))
             resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
 
         if (StringUtils.isBlank(fullFilledItem.getUom()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_UOM_IS_BLANK"), fullFilledItem.getItemCode()), null));
 
         try {
             Long.parseLong(fullFilledItem.getQuantity());
         } catch (Exception e) {
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), fullFilledItem.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_QUANTITY_IS_BLANK"), fullFilledItem.getItemCode()), null));
         }
         return resultDetailsList;
     }
@@ -113,15 +113,15 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
             resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), null));
 
         if (StringUtils.isBlank(item.getUom()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_UOM_IS_BLANK"), item.getItemCode()), null));
 
         if (StringUtils.isBlank(item.getItemDescription()))
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_DESCRIPTION_IS_BLANK"), item.getItemCode()), null));
 
         try {
             Long.parseLong(item.getQuantity());
         } catch (Exception e) {
-            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_ITEM_CODE_IS_BLANK"), item.getItemCode()), null));
+            resultDetailsList.add(new ResultDetail(ResultDetail.ResultsDetailsType.ERROR, String.format(errorMessageResource.getString("ERROR_QUANTITY_IS_BLANK"), item.getItemCode()), null));
         }
         return resultDetailsList;
     }
@@ -280,11 +280,28 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
      * @param msg body to be sent
      */
     private void sendDataToElmis(String msg) {
+        String path;
+        String host;
         String scheme;
-        if (config.getProperty("elmis.secure").equals("true")) {
-            scheme = "https";
+        int portNumber;
+
+        if (config.getDynamicConfig().isEmpty()) {
+            if (config.getProperty("elmis.secure").equals("true")) {
+                scheme = "https";
+            } else {
+                scheme = "http";
+            }
+
+            host = config.getProperty("elmis.host");
+            portNumber = Integer.parseInt(config.getProperty("elmis.api.port"));
+            path = config.getProperty("elmis.api.out_of_stock_notification.path");
         } else {
-            scheme = "http";
+            JSONObject connectionProperties = new JSONObject(config.getDynamicConfig()).getJSONObject("elmisConnectionProperties");
+
+            host = connectionProperties.getString("elmisHost");
+            portNumber = connectionProperties.getInt("elmisPort");
+            path = connectionProperties.getString("elmisOutOfStockNotificationPath");
+            scheme = connectionProperties.getString("elmisScheme");
         }
 
         Map<String, String> headers = new HashMap<>();
@@ -294,8 +311,7 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
 
         MediatorHTTPRequest forwardToElmisRequest = new MediatorHTTPRequest(
                 (originalRequest).getRequestHandler(), getSelf(), "Sending Out of Stock Notification to eLMIS", "POST", scheme,
-                config.getProperty("elmis.host"), Integer.parseInt(config.getProperty("elmis.api.port")), config.getProperty("elmis.api.out_of_stock_notification.path"),
-                msg, headers, params
+                host, portNumber, path, msg, headers, params
         );
 
         ActorSelection httpConnector = getContext().actorSelection(config.userPathFor("http-connector"));
