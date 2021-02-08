@@ -8,70 +8,76 @@
       "name": "eLMIS Daily Stock Status Route",
       "host": "localhost",
       "port": "3001",
-      "path": "/elmis/daily_stock_status",
+      "path": "/elmis-daily-stock-status",
       "type": "http"
     },
     {
       "name": "eLMIS Daily Stock Status ACK Route",
       "host": "localhost",
       "port": "3001",
-      "path": "/elmis/daily_stock_status_ACK",
+      "path": "/elmis-daily-stock-status-ACK",
       "type": "http"
     },
     {
       "name": "eLMIS Out of Stock Notification Route",
       "host": "localhost",
       "port": "3001",
-      "path": "/elmis/out_of_stock_notification",
+      "path": "/elmis-out-of-stock-notification",
       "type": "http"
     }
   ],
   "defaultChannelConfig": [
     {
-      "name": "eLMIS Daily Stock Status Mediator",
+      "name": "eLMIS Daily Stock Status Channel",
       "urlPattern": "^/daily_stock_status$",
-      "description": "An openHIM mediator for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM channel for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "epicor-role"
+      ],
       "routes": [
         {
           "name": "eLMIS Daily Stock Status Route",
           "host": "localhost",
           "port": "3001",
-          "path": "/elmis/daily_stock_status",
+          "path": "/elmis-daily-stock-status",
           "type": "http",
           "primary": "true"
         }
       ]
     },
     {
-      "name": "eLMIS Daily Stock Status ACK Mediator",
+      "name": "eLMIS Daily Stock Status ACK Channel",
       "urlPattern": "^/daily_stock_status_ACK$",
-      "description": "An openHIM mediator for handling Daily Stock Status Acknowledgments from eLMIS.",
+      "description": "An openHIM channel for handling Daily Stock Status Acknowledgments from eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "epicor-role"
+      ],
       "routes": [
         {
           "name": "eLMIS Daily Stock Status ACK",
           "host": "localhost",
           "port": "3001",
-          "path": "/elmis/daily_stock_status_ACK",
+          "path": "/elmis-daily-stock-status-ACK",
           "type": "http"
         }
       ]
     },
     {
-      "name": "eLMIS Out of Stock Notification Mediator",
+      "name": "eLMIS Out of Stock Notification Channel",
       "urlPattern": "^/out_of_stock_notification$",
-      "description": "An openHIM mediator for handling  sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
+      "description": "An openHIM channel for handling sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "epicor-role"
+      ],
       "routes": [
         {
           "name": "eLMIS Out of Stock Notification Route",
           "host": "localhost",
           "port": "3001",
-          "path": "/elmis/out_of_stock_notification",
+          "path": "/elmis-out-of-stock-notification",
           "type": "http"
         }
       ]
@@ -99,13 +105,13 @@
         {
           "param": "elmisDailyStockStatusPath",
           "displayName": "eLMIS Daily Stock Status API Path",
-          "description": "The path to the endpoint for receiving daily stock status data from the HIM. eg /elmis/daily-stock-status",
+          "description": "The path to the endpoint for receiving daily stock status data from the HIM. eg /elmis-daily-stock-status",
           "type": "string"
         },
         {
           "param": "elmisOutOfStockNotificationPath",
           "displayName": "eLMIS Out of Stock Notification API Path",
-          "description": "The path to the endpoint for receiving Out of Stock Notification data from the HIM. eg /elmis/out-of-stock-notification",
+          "description": "The path to the endpoint for receiving Out of Stock Notification data from the HIM. eg /elmis-out-of-stock-notification",
           "type": "string"
         },
         {
@@ -117,6 +123,18 @@
             "http",
             "https"
           ]
+        },
+        {
+          "param": "destinationUsername",
+          "displayName": "Destination Username",
+          "description": "The destination username for receiving of data from the HIM.",
+          "type": "string"
+        },
+        {
+          "param": "destinationPassword",
+          "displayName": "Destination Password",
+          "description": "The destination password for receiving of data from the HIM.",
+          "type": "password"
         }
       ]
     }

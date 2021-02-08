@@ -5,8 +5,10 @@ import akka.actor.UntypedActor;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONObject;
@@ -22,6 +24,7 @@ import tz.go.moh.him.mediator.core.validator.DateValidatorUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -280,6 +283,9 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
      * @param msg body to be sent
      */
     private void sendDataToElmis(String msg) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+
         String path;
         String host;
         String scheme;
@@ -298,14 +304,19 @@ public class OutOfStockNotificationOrchestrator extends UntypedActor {
         } else {
             JSONObject connectionProperties = new JSONObject(config.getDynamicConfig()).getJSONObject("elmisConnectionProperties");
 
+            if (!connectionProperties.getString("destinationUsername").isEmpty() && !connectionProperties.getString("destinationPassword").isEmpty()) {
+                String auth = connectionProperties.getString("destinationUsername") + ":" + connectionProperties.getString("destinationPassword");
+                byte[] encodedAuth = Base64.encodeBase64(
+                        auth.getBytes(StandardCharsets.ISO_8859_1));
+                String authHeader = "Basic " + new String(encodedAuth);
+                headers.put(HttpHeaders.AUTHORIZATION, authHeader);
+            }
+
             host = connectionProperties.getString("elmisHost");
             portNumber = connectionProperties.getInt("elmisPort");
             path = connectionProperties.getString("elmisOutOfStockNotificationPath");
             scheme = connectionProperties.getString("elmisScheme");
         }
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
 
         List<Pair<String, String>> params = new ArrayList<>();
 

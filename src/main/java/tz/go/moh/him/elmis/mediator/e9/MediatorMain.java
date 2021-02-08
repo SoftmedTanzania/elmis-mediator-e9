@@ -24,9 +24,9 @@ public class MediatorMain {
     private static RoutingTable buildRoutingTable() throws RoutingTable.RouteAlreadyMappedException {
         RoutingTable routingTable = new RoutingTable();
 
-        routingTable.addRoute("/elmis/daily_stock_status", DailyStockStatusOrchestrator.class);
-        routingTable.addRoute("/elmis/daily_stock_status_ACK", DailyStockStatusAcknowledgementOrchestrator.class);
-        routingTable.addRoute("/elmis/out_of_stock_notification", OutOfStockNotificationOrchestrator.class);
+        routingTable.addRoute("/elmis-daily-stock-status", DailyStockStatusOrchestrator.class);
+        routingTable.addRoute("/elmis-daily-stock-status-ACK", DailyStockStatusAcknowledgementOrchestrator.class);
+        routingTable.addRoute("/elmis-out-of-stock-notification", OutOfStockNotificationOrchestrator.class);
 
         return routingTable;
     }
