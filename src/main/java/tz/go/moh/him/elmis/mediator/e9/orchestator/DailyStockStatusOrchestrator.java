@@ -6,8 +6,10 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.codehaus.plexus.util.StringUtils;
 import org.json.JSONObject;
@@ -23,6 +25,7 @@ import tz.go.moh.him.mediator.core.domain.ResultDetail;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -253,6 +256,14 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
                 path = config.getProperty("elmis.api.daily_stock_status.path");
             } else {
                 JSONObject connectionProperties = new JSONObject(config.getDynamicConfig()).getJSONObject("elmisConnectionProperties");
+
+                if (!connectionProperties.getString("destinationUsername").isEmpty() && !connectionProperties.getString("destinationPassword").isEmpty()) {
+                    String auth = connectionProperties.getString("destinationUsername") + ":" + connectionProperties.getString("destinationPassword");
+                    byte[] encodedAuth = Base64.encodeBase64(
+                            auth.getBytes(StandardCharsets.ISO_8859_1));
+                    String authHeader = "Basic " + new String(encodedAuth);
+                    headers.put(HttpHeaders.AUTHORIZATION, authHeader);
+                }
 
                 host = connectionProperties.getString("elmisHost");
                 portNumber = connectionProperties.getInt("elmisPort");

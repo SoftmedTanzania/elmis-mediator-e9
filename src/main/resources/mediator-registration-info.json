@@ -32,7 +32,9 @@
       "urlPattern": "^/daily_stock_status$",
       "description": "An openHIM mediator for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "elmis-mediator"
+      ],
       "routes": [
         {
           "name": "eLMIS Daily Stock Status Route",
@@ -49,7 +51,9 @@
       "urlPattern": "^/daily_stock_status_ACK$",
       "description": "An openHIM mediator for handling Daily Stock Status Acknowledgments from eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "elmis-mediator"
+      ],
       "routes": [
         {
           "name": "eLMIS Daily Stock Status ACK",
@@ -65,7 +69,9 @@
       "urlPattern": "^/out_of_stock_notification$",
       "description": "An openHIM mediator for handling  sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
       "type": "http",
-      "allow": ["elmis-mediator"],
+      "allow": [
+        "elmis-mediator"
+      ],
       "routes": [
         {
           "name": "eLMIS Out of Stock Notification Route",
@@ -117,6 +123,18 @@
             "http",
             "https"
           ]
+        },
+        {
+          "param": "destinationUsername",
+          "displayName": "Destination Username",
+          "description": "The destination username for receiving of data from the HIM.",
+          "type": "string"
+        },
+        {
+          "param": "destinationPassword",
+          "displayName": "Destination Password",
+          "description": "The destination password for receiving of data from the HIM.",
+          "type": "password"
         }
       ]
     }
