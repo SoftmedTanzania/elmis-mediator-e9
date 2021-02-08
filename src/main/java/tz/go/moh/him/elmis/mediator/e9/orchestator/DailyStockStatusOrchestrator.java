@@ -257,8 +257,8 @@ public class DailyStockStatusOrchestrator extends UntypedActor {
             } else {
                 JSONObject connectionProperties = new JSONObject(config.getDynamicConfig()).getJSONObject("elmisConnectionProperties");
 
-                if (!connectionProperties.getString("destinationUsername").isEmpty() && !connectionProperties.getString("destinationPassword").isEmpty()) {
-                    String auth = connectionProperties.getString("destinationUsername") + ":" + connectionProperties.getString("destinationPassword");
+                if (!connectionProperties.getString("elmisUsername").isEmpty() && !connectionProperties.getString("elmisPassword").isEmpty()) {
+                    String auth = connectionProperties.getString("elmisUsername") + ":" + connectionProperties.getString("elmisPassword");
                     byte[] encodedAuth = Base64.encodeBase64(
                             auth.getBytes(StandardCharsets.ISO_8859_1));
                     String authHeader = "Basic " + new String(encodedAuth);
