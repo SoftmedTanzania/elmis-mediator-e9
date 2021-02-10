@@ -29,7 +29,7 @@
   "defaultChannelConfig": [
     {
       "name": "eLMIS Daily Stock Status Channel",
-      "urlPattern": "^/daily_stock_status$",
+      "urlPattern": "^/elmis-daily-stock-status$",
       "description": "An openHIM channel for handling  sharing of Daily Stock Status from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": [
@@ -48,7 +48,7 @@
     },
     {
       "name": "eLMIS Daily Stock Status ACK Channel",
-      "urlPattern": "^/daily_stock_status_ACK$",
+      "urlPattern": "^/elmis-daily-stock-status-ACK$",
       "description": "An openHIM channel for handling Daily Stock Status Acknowledgments from eLMIS.",
       "type": "http",
       "allow": [
@@ -66,7 +66,7 @@
     },
     {
       "name": "eLMIS Out of Stock Notification Channel",
-      "urlPattern": "^/out_of_stock_notification$",
+      "urlPattern": "^/elmis-out-of-stock-notification$",
       "description": "An openHIM channel for handling sharing of Out of Stock Notifications from MSD Epicor9 to eLMIS.",
       "type": "http",
       "allow": [
